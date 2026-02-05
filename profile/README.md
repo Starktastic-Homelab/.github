@@ -72,7 +72,7 @@ flowchart TB
     VIP --> Apps
     Apps --> TrueNAS
     Runner -->|"Builds & Deploys"| Cluster
-    TrueNAS -->|"NFS + MinIO"| Apps
+    TrueNAS -->|"NFS Storage"| Apps
     
     style Proxmox fill:#2d3748,stroke:#e57000
     style Cluster fill:#2d3748,stroke:#4299e1
@@ -87,8 +87,8 @@ flowchart TB
 | **kube-master-01** | K3s Control Plane | 2 cores, 4GB RAM |
 | **kube-worker-01** | K3s Worker | 6 cores, 24GB RAM, Intel GPU |
 | **kube-worker-02** | K3s Worker | 6 cores, 24GB RAM, Intel GPU |
-| **GitHub Actions Runner** | Self-hosted CI/CD | Runs Packer, Terraform, Ansible pipelines |
-| **TrueNAS Scale** | Storage Server | NFS shares, MinIO S3, media storage |
+| **GitHub Actions Runner** | Self-hosted CI/CD | Runs Packer, Terraform, Ansible pipelines; hosts MinIO for state storage |
+| **TrueNAS Scale** | Storage Server | NFS shares, media storage |
 
 ### Cluster Specifications
 
@@ -101,8 +101,9 @@ flowchart TB
 | **Workers** | 2 nodes (6 cores, 24GB RAM each) |
 | **GPU** | Intel SR-IOV passthrough |
 | **HA** | Kube-VIP (VIP: 10.9.9.99) |
-| **Storage** | TrueNAS Scale (NFS + MinIO) |
+| **Storage** | TrueNAS Scale (NFS) |
 | **CI/CD** | Self-hosted GitHub Actions runner |
+| **State Backend** | MinIO (on runner) |
 
 ### Network Architecture
 
