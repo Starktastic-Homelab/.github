@@ -43,40 +43,27 @@ flowchart LR
 ## Architecture
 
 ```mermaid
-flowchart TB
+flowchart LR
     subgraph Proxmox["Proxmox VE"]
+        direction TB
         subgraph Cluster["K3s Cluster"]
-            Master["kube-master-01<br/>Control Plane"]
-            Worker1["kube-worker-01<br/>GPU Enabled"]
-            Worker2["kube-worker-02<br/>GPU Enabled"]
+            Master["kube-master-01"] & Worker1["kube-worker-01<br/>GPU"] & Worker2["kube-worker-02<br/>GPU"]
         end
-        
         VIP["Kube-VIP<br/>10.9.9.99"]
-        
-        subgraph Infrastructure["Infrastructure VMs"]
-            Runner["GitHub Actions Runner<br/>Self-hosted CI/CD"]
-            TrueNAS["TrueNAS Scale<br/>10.9.8.30"]
-        end
+        Runner["GitHub Actions Runner<br/>+ MinIO"]
+        TrueNAS["TrueNAS Scale<br/>10.9.8.30"]
     end
     
     subgraph Apps["Applications"]
-        ArgoCD[ArgoCD]
-        Traefik[Traefik]
-        Authentik[Authentik]
-        Services[Services]
+        ArgoCD[ArgoCD] & Traefik[Traefik] & Authentik[Authentik]
     end
     
-    Master --> VIP
-    Worker1 --> VIP
-    Worker2 --> VIP
-    VIP --> Apps
-    Apps --> TrueNAS
-    Runner -->|"Builds & Deploys"| Cluster
-    TrueNAS -->|"NFS Storage"| Apps
+    Cluster --> VIP --> Apps
+    TrueNAS -->|NFS| Apps
+    Runner -->|CI/CD| Cluster
     
     style Proxmox fill:#2d3748,stroke:#e57000
     style Cluster fill:#2d3748,stroke:#4299e1
-    style Infrastructure fill:#2d3748,stroke:#805ad5
     style Apps fill:#2d3748,stroke:#48bb78
 ```
 
