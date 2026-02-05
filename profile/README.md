@@ -52,6 +52,11 @@ flowchart TB
         end
         
         VIP["Kube-VIP<br/>10.9.9.99"]
+        
+        subgraph Infrastructure["Infrastructure VMs"]
+            Runner["GitHub Actions Runner<br/>Self-hosted CI/CD"]
+            TrueNAS["TrueNAS Scale<br/>10.9.8.30"]
+        end
     end
     
     subgraph Apps["Applications"]
@@ -61,22 +66,29 @@ flowchart TB
         Services[Services]
     end
     
-    subgraph Storage["Storage"]
-        NFS["NFS Server<br/>10.9.8.30"]
-        MinIO["MinIO<br/>State Backend"]
-    end
-    
     Master --> VIP
     Worker1 --> VIP
     Worker2 --> VIP
     VIP --> Apps
-    Apps --> NFS
+    Apps --> TrueNAS
+    Runner -->|"Builds & Deploys"| Cluster
+    TrueNAS -->|"NFS + MinIO"| Apps
     
     style Proxmox fill:#2d3748,stroke:#e57000
     style Cluster fill:#2d3748,stroke:#4299e1
+    style Infrastructure fill:#2d3748,stroke:#805ad5
     style Apps fill:#2d3748,stroke:#48bb78
-    style Storage fill:#2d3748,stroke:#805ad5
 ```
+
+### Infrastructure Overview
+
+| VM | Purpose | Details |
+|----|---------|---------|
+| **kube-master-01** | K3s Control Plane | 2 cores, 4GB RAM |
+| **kube-worker-01** | K3s Worker | 6 cores, 24GB RAM, Intel GPU |
+| **kube-worker-02** | K3s Worker | 6 cores, 24GB RAM, Intel GPU |
+| **GitHub Actions Runner** | Self-hosted CI/CD | Runs Packer, Terraform, Ansible pipelines |
+| **TrueNAS Scale** | Storage Server | NFS shares, MinIO S3, media storage |
 
 ### Cluster Specifications
 
@@ -89,6 +101,8 @@ flowchart TB
 | **Workers** | 2 nodes (6 cores, 24GB RAM each) |
 | **GPU** | Intel SR-IOV passthrough |
 | **HA** | Kube-VIP (VIP: 10.9.9.99) |
+| **Storage** | TrueNAS Scale (NFS + MinIO) |
+| **CI/CD** | Self-hosted GitHub Actions runner |
 
 ### Network Architecture
 
