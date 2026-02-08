@@ -106,7 +106,7 @@ flowchart LR
 |--------|---------|--------------|
 | `*.starktastic.net` | Public services | 10.9.8.90 |
 | `*.internal.starktastic.net` | Internal services | 10.9.9.90 |
-| `*.benplus.vip` | Media services | 10.9.8.90 |
+| `*.benplus.app` | Media services | 10.9.8.90 |
 
 ## Pipeline Flow
 
