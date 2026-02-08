@@ -1,8 +1,8 @@
 # Starktastic Homelab
 
-[![Packer](https://github.com/starktastic/homelab-packer/actions/workflows/build.yml/badge.svg)](https://github.com/starktastic/homelab-packer/actions/workflows/build.yml)
-[![Terraform](https://github.com/starktastic/homelab-terraform/actions/workflows/apply.yml/badge.svg)](https://github.com/starktastic/homelab-terraform/actions/workflows/apply.yml)
-[![Ansible](https://github.com/starktastic/homelab-ansible/actions/workflows/k3s.yml/badge.svg)](https://github.com/starktastic/homelab-ansible/actions/workflows/k3s.yml)
+[![Packer](https://github.com/Starktastic-Homelab/packer/actions/workflows/build.yml/badge.svg)](https://github.com/Starktastic-Homelab/packer/actions/workflows/build.yml)
+[![Terraform](https://github.com/Starktastic-Homelab/terraform/actions/workflows/apply.yml/badge.svg)](https://github.com/Starktastic-Homelab/terraform/actions/workflows/apply.yml)
+[![Ansible](https://github.com/Starktastic-Homelab/ansible/actions/workflows/k3s.yml/badge.svg)](https://github.com/Starktastic-Homelab/ansible/actions/workflows/k3s.yml)
 ![ArgoCD](https://img.shields.io/badge/GitOps-ArgoCD-48bb78?logo=argo)
 
 A fully automated GitOps-based Kubernetes homelab running on Proxmox VE with Intel SR-IOV GPU passthrough.
@@ -35,10 +35,10 @@ flowchart LR
 
 | Repository | Description | Key Technologies |
 |------------|-------------|------------------|
-| [homelab-packer](https://github.com/starktastic/homelab-packer) | Debian 13 VM template with Intel SR-IOV GPU drivers | Packer, Proxmox, Cloud-Init |
-| [homelab-terraform](https://github.com/starktastic/homelab-terraform) | K3s cluster VM provisioning on Proxmox | Terraform, Proxmox, MinIO |
-| [homelab-ansible](https://github.com/starktastic/homelab-ansible) | K3s installation and platform bootstrapping | Ansible, K3s, Kube-VIP |
-| [homelab-platform](https://github.com/starktastic/homelab-platform) | GitOps application definitions | ArgoCD, Helm, Traefik |
+| [packer](https://github.com/Starktastic-Homelab/packer) | Debian 13 VM template with Intel SR-IOV GPU drivers | Packer, Proxmox, Cloud-Init |
+| [terraform](https://github.com/Starktastic-Homelab/terraform) | K3s cluster VM provisioning on Proxmox | Terraform, Proxmox, MinIO |
+| [ansible](https://github.com/Starktastic-Homelab/ansible) | K3s installation and platform bootstrapping | Ansible, K3s, Kube-VIP |
+| [platform](https://github.com/Starktastic-Homelab/platform) | GitOps application definitions | ArgoCD, Helm, Traefik |
 
 ## Architecture
 
@@ -106,7 +106,7 @@ flowchart LR
 |--------|---------|--------------|
 | `*.starktastic.net` | Public services | 10.9.8.90 |
 | `*.internal.starktastic.net` | Internal services | 10.9.9.90 |
-| `*.benplus.vip` | Media services | 10.9.8.90 |
+| `*.benplus.app` | Media services | 10.9.8.90 |
 
 ## Pipeline Flow
 
@@ -214,10 +214,10 @@ flowchart LR
 
 ### Quick Links
 
-- [Packer Documentation](https://github.com/starktastic/homelab-packer)
-- [Terraform Documentation](https://github.com/starktastic/homelab-terraform)
-- [Ansible Documentation](https://github.com/starktastic/homelab-ansible)
-- [Platform Documentation](https://github.com/starktastic/homelab-platform)
+- [Packer Documentation](https://github.com/Starktastic-Homelab/packer)
+- [Terraform Documentation](https://github.com/Starktastic-Homelab/terraform)
+- [Ansible Documentation](https://github.com/Starktastic-Homelab/ansible)
+- [Platform Documentation](https://github.com/Starktastic-Homelab/platform)
 
 ## Contributing
 
