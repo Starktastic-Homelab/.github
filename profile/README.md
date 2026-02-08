@@ -2,7 +2,7 @@
 
 [![Packer](https://github.com/Starktastic-Homelab/packer/actions/workflows/build.yml/badge.svg)](https://github.com/Starktastic-Homelab/packer/actions/workflows/build.yml)
 [![Terraform](https://github.com/Starktastic-Homelab/terraform/actions/workflows/apply.yml/badge.svg)](https://github.com/Starktastic-Homelab/terraform/actions/workflows/apply.yml)
-[![Ansible](https://github.com/Starktastic-Homelab/ansible/actions/workflows/k3s.yml/badge.svg)](https://github.com/Starktastic-Homelab/ansible/actions/workflows/k3s.yml)
+[![Ansible](https://github.com/Starktastic-Homelab/ansible/actions/workflows/deploy.yml/badge.svg)](https://github.com/Starktastic-Homelab/ansible/actions/workflows/deploy.yml)
 ![ArgoCD](https://img.shields.io/badge/GitOps-ArgoCD-48bb78?logo=argo)
 
 A fully automated GitOps-based Kubernetes homelab running on Proxmox VE with Intel SR-IOV GPU passthrough.
