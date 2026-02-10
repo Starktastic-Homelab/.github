@@ -18,17 +18,17 @@ flowchart LR
         Packer["📦 Packer<br/>VM Template"]
         Terraform["🏗️ Terraform<br/>Infrastructure"]
         Ansible["⚙️ Ansible<br/>K3s Cluster"]
-        Platform["🚀 Platform<br/>Applications"]
+        Apps["🚀 Apps<br/>Applications"]
     end
     
-    Packer -->|"manifest.json<br/>triggers PR"| Terraform
-    Terraform -->|"repository<br/>dispatch"| Ansible
-    Ansible -->|"bootstrap<br/>ArgoCD"| Platform
+    Packer -->|“manifest.json<br/>triggers PR”| Terraform
+    Terraform -->|“repository<br/>dispatch”| Ansible
+    Ansible -->|“bootstrap<br/>ArgoCD”| Apps
     
     style Packer fill:#4299e1,stroke:#2b6cb0
     style Terraform fill:#805ad5,stroke:#553c9a
     style Ansible fill:#48bb78,stroke:#276749
-    style Platform fill:#ed8936,stroke:#c05621
+    style Apps fill:#ed8936,stroke:#c05621
 ```
 
 ## Repositories
@@ -37,8 +37,8 @@ flowchart LR
 |------------|-------------|------------------|
 | [packer](https://github.com/Starktastic-Homelab/packer) | Debian 13 VM template with Intel SR-IOV GPU drivers | Packer, Proxmox, Cloud-Init |
 | [terraform](https://github.com/Starktastic-Homelab/terraform) | K3s cluster VM provisioning on Proxmox | Terraform, Proxmox, MinIO |
-| [ansible](https://github.com/Starktastic-Homelab/ansible) | K3s installation and platform bootstrapping | Ansible, K3s, Kube-VIP |
-| [platform](https://github.com/Starktastic-Homelab/platform) | GitOps application definitions | ArgoCD, Helm, Traefik |
+| [ansible](https://github.com/Starktastic-Homelab/ansible) | K3s installation and cluster bootstrapping | Ansible, K3s, Kube-VIP |
+| [apps](https://github.com/Starktastic-Homelab/apps) | GitOps application definitions | ArgoCD, Helm, Traefik |
 
 ## Architecture
 
@@ -148,7 +148,7 @@ flowchart LR
     Dispatch[Dispatch] --> SSH[Wait for SSH]
     SSH --> Init[K3s Init]
     Init --> Join[Join Nodes]
-    Join --> Bootstrap[Bootstrap Platform]
+    Join --> Bootstrap[Bootstrap Cluster]
 ```
 
 - Dynamic inventory via Proxmox tags
@@ -156,7 +156,7 @@ flowchart LR
 - Sealed-secrets key pre-seeding
 - ArgoCD installation with OIDC
 
-### 4. Application Deployment (Platform)
+### 4. Application Deployment (Apps)
 
 ```mermaid
 flowchart LR
@@ -209,15 +209,15 @@ flowchart LR
 
 1. **Packer** - Build the base VM template
 2. **Terraform** - Provision cluster VMs
-3. **Ansible** - Install K3s and bootstrap platform
-4. **Platform** - Applications deploy automatically via ArgoCD
+3. **Ansible** - Install K3s and bootstrap cluster
+4. **Apps** - Applications deploy automatically via ArgoCD
 
 ### Quick Links
 
 - [Packer Documentation](https://github.com/Starktastic-Homelab/packer)
 - [Terraform Documentation](https://github.com/Starktastic-Homelab/terraform)
 - [Ansible Documentation](https://github.com/Starktastic-Homelab/ansible)
-- [Platform Documentation](https://github.com/Starktastic-Homelab/platform)
+- [Apps Documentation](https://github.com/Starktastic-Homelab/apps)
 
 ## Contributing
 
