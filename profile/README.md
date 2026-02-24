@@ -36,7 +36,7 @@ flowchart LR
 | Repository | Description | Key Technologies |
 |------------|-------------|------------------|
 | [packer](https://github.com/Starktastic-Homelab/packer) | Debian 13 VM template with Intel SR-IOV GPU drivers | Packer, Proxmox, Cloud-Init |
-| [terraform](https://github.com/Starktastic-Homelab/terraform) | K3s cluster VM provisioning on Proxmox | Terraform, Proxmox, MinIO |
+| [terraform](https://github.com/Starktastic-Homelab/terraform) | K3s cluster VM provisioning on Proxmox | Terraform, Proxmox, Garage |
 | [ansible](https://github.com/Starktastic-Homelab/ansible) | K3s installation and cluster bootstrapping | Ansible, K3s, Kube-VIP |
 | [apps](https://github.com/Starktastic-Homelab/apps) | GitOps application definitions | ArgoCD, Helm, Traefik |
 
@@ -50,7 +50,7 @@ flowchart LR
             Master["kube-master-01"] & Worker1["kube-worker-01<br/>GPU"] & Worker2["kube-worker-02<br/>GPU"]
         end
         VIP["Kube-VIP<br/>10.9.9.99"]
-        Runner["GitHub Actions Runner<br/>+ MinIO"]
+        Runner["GitHub Actions Runner<br/>+ Garage"]
         TrueNAS["TrueNAS Scale<br/>10.9.8.30"]
     end
     
@@ -74,7 +74,7 @@ flowchart LR
 | **kube-master-01** | K3s Control Plane | 2 cores, 4GB RAM |
 | **kube-worker-01** | K3s Worker | 6 cores, 24GB RAM, Intel GPU |
 | **kube-worker-02** | K3s Worker | 6 cores, 24GB RAM, Intel GPU |
-| **GitHub Actions Runner** | Self-hosted CI/CD | Runs Packer, Terraform, Ansible pipelines; hosts MinIO for state storage |
+| **GitHub Actions Runner** | Self-hosted CI/CD | Runs Packer, Terraform, Ansible pipelines; hosts Garage for state storage |
 | **TrueNAS Scale** | Storage Server | NFS shares, media storage |
 
 ### Cluster Specifications
@@ -90,7 +90,7 @@ flowchart LR
 | **HA** | Kube-VIP (VIP: 10.9.9.99) |
 | **Storage** | TrueNAS Scale (NFS) |
 | **CI/CD** | Self-hosted GitHub Actions runner |
-| **State Backend** | MinIO (on runner) |
+| **State Backend** | Garage (on runner) |
 
 ### Network Architecture
 
@@ -131,7 +131,7 @@ flowchart LR
 ```mermaid
 flowchart LR
     PR[Pull Request] --> Plan[Terraform Plan]
-    Plan --> MinIO[(MinIO)]
+    Plan --> S3[(Garage)]
     Merge[Merge] --> Apply[Terraform Apply]
     Apply --> Dispatch[Repository Dispatch]
 ```
@@ -201,7 +201,7 @@ flowchart LR
 
 - Proxmox VE 8.x cluster
 - GitHub organization with Actions enabled
-- MinIO or S3-compatible storage
+- Garage or S3-compatible storage
 - Self-hosted GitHub Actions runner
 - DNS configured for your domains
 
