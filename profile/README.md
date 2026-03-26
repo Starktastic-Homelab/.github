@@ -202,34 +202,33 @@ Every repository has its own CI/CD workflows, but they're wired together to form
 
 ```mermaid
 flowchart TB
-    subgraph packer_ci["Packer CI"]
+    subgraph packer_ci["Packer"]
         P_PR["PR: validate + format"]
         P_Build["Main: build template\n→ GitHub Release"]
         P_Check["PR gate:\ncheck-host-driver"]
         P_ISO["Weekly:\ncheck-debian-iso"]
     end
 
-    subgraph terraform_ci["Terraform CI"]
+    subgraph terraform_ci["Terraform"]
         T_PR["PR: validate + plan\n→ S3 artifact + PR comment"]
         T_Apply["Main: apply\n(normal / drain / destroy)"]
         T_Drift["Daily: drift detection\n→ auto GitHub Issue"]
     end
 
-    subgraph ansible_ci["Ansible CI"]
+    subgraph ansible_ci["Ansible"]
         A_PR["PR: lint + syntax"]
-        A_Deploy["Deploy: k3s.yml\n→ upload kubeconfig\n→ update org secret"]
+        A_Deploy["Deploy: k3s.yml\nUpdates org secret\nwith kubeconfig"]
         A_SRIOV["SR-IOV: upgrade\nhost driver + reboot"]
         A_Ser2net["ser2net: deploy\nZigbee bridge"]
     end
 
-    subgraph apps_ci["Apps CI"]
+    subgraph apps_ci["Apps"]
         Apps_PR["PR: YAML lint\n+ Kubeconform\n+ ArgoCD diff"]
         Apps_Refresh["Main: scope-aware\nArgoCD refresh"]
     end
 
     P_Build -- "Creates PR\nwith manifest" --> T_PR
     T_Apply -- "repository_dispatch\ninfrastructure-changed" --> A_Deploy
-    A_Deploy -- "Updates\nKUBECONFIG_RAW" --> T_Drift
     A_Deploy -- "Bootstraps\nArgoCD" --> Apps_Refresh
 
     style packer_ci fill:#1a1b27,stroke:#4299e1,color:#e2e8f0
