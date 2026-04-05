@@ -31,30 +31,34 @@ The crown jewel of this project is the **end-to-end automation pipeline** — fo
 
 ```mermaid
 flowchart LR
-    subgraph "1 · Image Factory"
-        P["📦 Packer\nBuild immutable\nDebian template"]
+    subgraph s1["1 · Image Factory"]
+        P(["📦 Packer\nBuild immutable\nDebian template"])
     end
 
-    subgraph "2 · VM Provisioning"
-        T["🏗️ Terraform\nClone template into\ncluster VMs"]
+    subgraph s2["2 · VM Provisioning"]
+        T(["🏗️ Terraform\nClone template into\ncluster VMs"])
     end
 
-    subgraph "3 · Cluster Setup"
-        A["⚙️ Ansible\nInstall K3s + HA\nBootstrap ArgoCD"]
+    subgraph s3["3 · Cluster Setup"]
+        A(["⚙️ Ansible\nInstall K3s + HA\nBootstrap ArgoCD"])
     end
 
-    subgraph "4 · Application Layer"
-        K["☸️ Apps\n60+ services via\nGitOps reconciliation"]
+    subgraph s4["4 · Application Layer"]
+        K(["☸️ Apps\n60+ services via\nGitOps reconciliation"])
     end
 
-    P -->|"manifest PR\n(auto-created)"| T
-    T -->|"repository_dispatch\n(auto-triggered)"| A
-    A -->|"ArgoCD bootstrap\n(App-of-Apps)"| K
+    P ==>|"manifest PR\n(auto-created)"| T
+    T ==>|"repository_dispatch\n(auto-triggered)"| A
+    A ==>|"ArgoCD bootstrap\n(App-of-Apps)"| K
 
-    style P fill:#02A8EF,color:#fff
-    style T fill:#7B42BC,color:#fff
-    style A fill:#EE0000,color:#fff
-    style K fill:#326CE5,color:#fff
+    classDef packer fill:#02A8EF,stroke:#0196D4,color:#fff
+    classDef terraform fill:#7B42BC,stroke:#6A35A3,color:#fff
+    classDef ansible fill:#EE0000,stroke:#CC0000,color:#fff
+    classDef apps fill:#326CE5,stroke:#2B5FC2,color:#fff
+    class P packer
+    class T terraform
+    class A ansible
+    class K apps
 ```
 
 **How it works:**
@@ -81,16 +85,16 @@ flowchart TB
         end
 
         subgraph storage["Storage"]
-            ZFS["8×14TB HDDs\n2× RAIDz1\nMedia + Backups"]
-            NVME_PV["NVMe SSD\nPersistent Volumes\n(NFS to cluster)"]
-            NVME_VM["NVMe SSD\nVM Disks"]
+            ZFS[(8×14TB HDDs\n2× RAIDz1\nMedia + Backups)]
+            NVME_PV[(NVMe SSD\nPersistent Volumes\nNFS to cluster)]
+            NVME_VM[(NVMe SSD\nVM Disks)]
         end
     end
 
     subgraph platform["Platform Layer"]
         TRAEFIK["Traefik\nIngress + TLS"]
-        AUTH["Authentik\nSSO (OIDC/LDAP)"]
-        CS["CrowdSec\nIntrusion Detection"]
+        AUTH{{"Authentik\nSSO (OIDC/LDAP)"}}
+        CS{{"CrowdSec\nIntrusion Detection"}}
         CERT["cert-manager\nLet's Encrypt"]
         SS["Sealed Secrets\nGitOps-safe encryption"]
         MLB["MetalLB\nL2 Load Balancer"]
@@ -103,16 +107,16 @@ flowchart TB
     end
 
     subgraph observe["Observability"]
-        PROM["Prometheus"] --- GRAF["Grafana"]
-        LOKI["Loki"] --- GRAF
-        TEMPO["Tempo"] --- GRAF
-        GRAF --- NTFY["ntfy Alerts"]
+        PROM[(Prometheus)] --- GRAF["Grafana"]
+        LOKI[(Loki)] --- GRAF
+        TEMPO[(Tempo)] --- GRAF
+        GRAF --- NTFY(["ntfy Alerts"])
     end
 
     PVE --> cluster
-    cluster --> platform
-    platform --> apps
-    platform --> observe
+    cluster ==> platform
+    platform ==> apps
+    platform ==> observe
     storage -.-> cluster
 
     style hw fill:#3C3C3C,color:#fff
