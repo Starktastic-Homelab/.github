@@ -1,303 +1,203 @@
-<h1 align="center">Starktastic Homelab</h1>
+<div align="center">
 
-<p align="center">
-  <b>A fully automated, GitOps-driven Kubernetes homelab — from bare-metal VM image to running application in a single pipeline.</b>
-</p>
+# Starktastic Homelab
 
-<p align="center">
-  <a href="https://github.com/Starktastic-Homelab/packer/actions/workflows/build.yml"><img src="https://github.com/Starktastic-Homelab/packer/actions/workflows/build.yml/badge.svg" alt="Packer"></a>
-  <a href="https://github.com/Starktastic-Homelab/terraform/actions/workflows/apply.yml"><img src="https://github.com/Starktastic-Homelab/terraform/actions/workflows/apply.yml/badge.svg" alt="Terraform"></a>
-  <a href="https://github.com/Starktastic-Homelab/ansible/actions/workflows/deploy.yml"><img src="https://github.com/Starktastic-Homelab/ansible/actions/workflows/deploy.yml/badge.svg" alt="Ansible"></a>
-</p>
+### Production-Grade Infrastructure, Automated End-to-End
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Proxmox-VE-E57000?logo=proxmox&logoColor=white" alt="Proxmox">
-  <img src="https://img.shields.io/badge/Debian-13%20Trixie-A81D33?logo=debian&logoColor=white" alt="Debian">
-  <img src="https://img.shields.io/badge/K3s-Kubernetes-FFC61C?logo=k3s&logoColor=white" alt="K3s">
-  <img src="https://img.shields.io/badge/ArgoCD-GitOps-48bb78?logo=argo&logoColor=white" alt="ArgoCD">
-  <img src="https://img.shields.io/badge/Traefik-Ingress-24A1C1?logo=traefikproxy&logoColor=white" alt="Traefik">
-  <img src="https://img.shields.io/badge/Authentik-SSO-FD4B2D?logo=authentik&logoColor=white" alt="Authentik">
-</p>
+*A fully automated Kubernetes homelab built by **Ben Faingold** — from bare metal to running services in a single pipeline*
+
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![ArgoCD](https://img.shields.io/badge/ArgoCD-EF7B4D?style=for-the-badge&logo=argo&logoColor=white)](https://argoproj.github.io/cd/)
+[![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![Ansible](https://img.shields.io/badge/Ansible-EE0000?style=for-the-badge&logo=ansible&logoColor=white)](https://www.ansible.com/)
+[![Packer](https://img.shields.io/badge/Packer-02A8EF?style=for-the-badge&logo=packer&logoColor=white)](https://www.packer.io/)
+[![Proxmox](https://img.shields.io/badge/Proxmox-E57000?style=for-the-badge&logo=proxmox&logoColor=white)](https://www.proxmox.com/)
+
+</div>
 
 ---
 
-## At a Glance
+## What Is This?
 
-This organization contains four infrastructure-as-code repositories that together form a **zero-touch pipeline** — from golden VM image creation on Proxmox VE, through Kubernetes cluster provisioning and configuration, to a self-healing GitOps application layer with full observability, SSO, intrusion detection, and hardware-accelerated media transcoding via Intel SR-IOV GPU passthrough.
+This organization contains a **complete, production-grade infrastructure platform** running on a single server in my home. Every layer — from VM image baking to application deployment — is defined as code, version-controlled, and automated through CI/CD pipelines.
 
-Every stage triggers the next automatically. Merging a Packer PR creates a Terraform PR. Merging the Terraform PR provisions VMs and dispatches Ansible. Ansible installs K3s, bootstraps ArgoCD, and ArgoCD continuously syncs the cluster state from Git. Renovate keeps every dependency current across all four repos, including coordinated SR-IOV driver upgrades that span the hypervisor and VM template.
+It's not a toy setup. It runs **60+ self-hosted services** across media streaming, home automation, document management, and operations tooling — all behind SSO, intrusion detection, automated TLS, and full observability. And it can be **rebuilt from scratch, unattended**, by merging a single PR.
 
-## End-to-End Pipeline
+---
+
+## The Pipeline
+
+The crown jewel of this project is the **end-to-end automation pipeline** — four repositories that chain together through GitHub Actions, each triggering the next:
 
 ```mermaid
 flowchart LR
-    subgraph packer["1 · Packer"]
-        P_ISO["Debian ISO\n+ preseed"] --> P_Build["Bootstrap\nSR-IOV · Netplan\nCloud-Init"]
-        P_Build --> P_Template[("VM Template\non Proxmox")]
+    subgraph "1 · Image Factory"
+        P["📦 Packer\nBuild immutable\nDebian template"]
     end
 
-    subgraph terraform["2 · Terraform"]
-        T_Plan["Plan on PR\n+ S3 artifact"] --> T_Apply["Apply on merge"]
-        T_Apply --> T_VMs["Master + Workers\nDual-NIC · GPU"]
+    subgraph "2 · VM Provisioning"
+        T["🏗️ Terraform\nClone template into\ncluster VMs"]
     end
 
-    subgraph ansible["3 · Ansible"]
-        A_Init["K3s Init\n+ Kube-VIP"] --> A_Join["Join nodes\n+ GPU labels"]
-        A_Join --> A_Boot["Bootstrap\nSealed-Secrets\nCert Restore\nArgoCD + OIDC"]
+    subgraph "3 · Cluster Setup"
+        A["⚙️ Ansible\nInstall K3s + HA\nBootstrap ArgoCD"]
     end
 
-    subgraph apps["4 · Apps"]
-        Apps_Sync["ArgoCD syncs\nApplicationSets"] --> Apps_Phase["Phased rollout\nCRDs → Foundation\n→ Controllers\n→ Services"]
+    subgraph "4 · Application Layer"
+        K["☸️ Apps\n60+ services via\nGitOps reconciliation"]
     end
 
-    P_Template -- "manifest.json\ncreates PR" --> T_Plan
-    T_VMs -- "repository_dispatch" --> A_Init
-    A_Boot -- "bootstraps" --> Apps_Sync
+    P -->|"manifest PR\n(auto-created)"| T
+    T -->|"repository_dispatch\n(auto-triggered)"| A
+    A -->|"ArgoCD bootstrap\n(App-of-Apps)"| K
 
-    style packer fill:#1a1b27,stroke:#4299e1,color:#e2e8f0
-    style terraform fill:#1a1b27,stroke:#805ad5,color:#e2e8f0
-    style ansible fill:#1a1b27,stroke:#48bb78,color:#e2e8f0
-    style apps fill:#1a1b27,stroke:#ed8936,color:#e2e8f0
+    style P fill:#02A8EF,color:#fff
+    style T fill:#7B42BC,color:#fff
+    style A fill:#EE0000,color:#fff
+    style K fill:#326CE5,color:#fff
 ```
 
-## Repositories
+**How it works:**
 
-| Repository | Description |
-|------------|-------------|
-| **[packer](https://github.com/Starktastic-Homelab/packer)** | Builds hardened Debian 13 VM templates on Proxmox with Intel SR-IOV DKMS drivers, cloud-init, and Netplan. Weekly ISO checks, Renovate-managed driver versions, and a merge gate that coordinates driver upgrades with Ansible. |
-| **[terraform](https://github.com/Starktastic-Homelab/terraform)** | Provisions K3s VMs from the Packer template — dual-NIC networking, SR-IOV GPU passthrough for workers, S3-backed state in Garage. Plan-on-PR / apply-on-merge workflow with drift detection, drain mode, and destroy safeguards. |
-| **[ansible](https://github.com/Starktastic-Homelab/ansible)** | Deploys K3s with Kube-VIP HA, joins masters and workers, pre-seeds sealed-secrets keys, restores TLS certificates from NFS backup, and installs ArgoCD with Authentik OIDC SSO. Also manages SR-IOV drivers and a Zigbee gateway on the Proxmox host. |
-| **[apps](https://github.com/Starktastic-Homelab/apps)** | Declarative GitOps definitions for every cluster workload — infrastructure, monitoring, home automation, media, and utilities. ApplicationSet matrix generator with 4-phase RollingSync, Traefik ingress with CrowdSec and Authentik, full Prometheus/Grafana/Loki/Tempo observability, and scope-aware ArgoCD refresh on push. |
+1. **Packer** builds a hardened Debian VM template on Proxmox with Intel GPU drivers, cloud-init, and modern networking — then pushes a manifest as a PR to the Terraform repo
+2. **Terraform** clones that template into master and worker VMs with dual-NIC networking and GPU passthrough — then triggers Ansible via `repository_dispatch`
+3. **Ansible** installs K3s with HA (Kube-VIP), pre-seeds secrets, restores TLS certificates from backup, and deploys ArgoCD with SSO — which immediately points at the Apps repo
+4. **ArgoCD** takes over and reconciles the entire application layer through a 4-phase ordered deployment, pulling from the Apps repo as the single source of truth
 
-## Architecture
-
-```mermaid
-flowchart TB
-    subgraph hw["Hardware Layer"]
-        PVE["Proxmox VE\nSingle Node"]
-        GPU["Intel iGPU\n7 SR-IOV VFs"]
-        NAS["TrueNAS\n10.9.8.30"]
-        Runner["GH Actions Runner\n+ Garage S3"]
-    end
-
-    subgraph vms["Virtual Machine Layer"]
-        M["kube-master-01\n4 cores · 16 GB"]
-        W1["kube-worker-01\n6 cores · 28 GB · GPU"]
-        W2["kube-worker-02\n6 cores · 28 GB · GPU"]
-    end
-
-    subgraph k3s["Kubernetes Layer"]
-        VIP["Kube-VIP\n10.9.9.99:6443"]
-        Flannel["Flannel CNI\neth1 (services)"]
-    end
-
-    subgraph platform["Platform Layer"]
-        ArgoCD["ArgoCD\nGitOps"]
-        Traefik["Traefik\nDaemonSet Ingress"]
-        Auth["Authentik\nOIDC SSO"]
-        CrowdSec["CrowdSec\nmTLS Bouncer"]
-        CertMgr["cert-manager\nLet's Encrypt"]
-        MetalLB["MetalLB\nL2 Load Balancer"]
-        SealedSec["Sealed Secrets"]
-        NFS_Prov["NFS Provisioner"]
-        IntelGPU["Intel GPU Operator"]
-    end
-
-    subgraph observe["Observability"]
-        Prom["Prometheus"]
-        Graf["Grafana"]
-        Loki["Loki"]
-        Tempo["Tempo"]
-        Alloy["Alloy"]
-        Ntfy["ntfy Alerts"]
-    end
-
-    subgraph services["Application Layer"]
-        HA["Home Automation"]
-        MediaApps["Media Stack"]
-        Ops["Operations & Utilities"]
-    end
-
-    PVE --> M & W1 & W2
-    GPU --> W1 & W2
-    NAS -- "NFS" --> NFS_Prov
-    Runner -- "CI/CD" --> PVE
-
-    M & W1 & W2 --> VIP
-    VIP --> ArgoCD
-    ArgoCD --> platform & observe & services
-
-    Alloy --> Prom & Loki & Tempo
-    Prom --> Graf
-    Loki --> Graf
-    Tempo --> Graf
-    Prom --> Ntfy
-
-    style hw fill:#1a1b27,stroke:#e57000,color:#e2e8f0
-    style vms fill:#1a1b27,stroke:#805ad5,color:#e2e8f0
-    style k3s fill:#1a1b27,stroke:#4299e1,color:#e2e8f0
-    style platform fill:#1a1b27,stroke:#48bb78,color:#e2e8f0
-    style observe fill:#1a1b27,stroke:#ed8936,color:#e2e8f0
-    style services fill:#1a1b27,stroke:#e53e3e,color:#e2e8f0
-```
-
-### Cluster Specifications
-
-| Component | Details |
-|-----------|---------|
-| **Hypervisor** | Proxmox VE on a single node with Intel iGPU |
-| **OS** | Debian 13 (Trixie) — Packer-built golden image |
-| **Kubernetes** | K3s (lightweight, Renovate-managed version) |
-| **Control Plane** | 1 master — 4 cores, 16 GB RAM, 96 GB disk |
-| **Workers** | 2 nodes — 6 cores, 28 GB RAM, 96 GB disk each, SR-IOV GPU |
-| **HA** | Kube-VIP — ARP-based VIP at `10.9.9.99` |
-| **Storage** | TrueNAS Scale — NFS dynamic provisioning |
-| **CI/CD** | Self-hosted GitHub Actions runner + Garage S3 backend |
-
-### Network Architecture
-
-```mermaid
-graph LR
-    subgraph mgmt["Management · 10.9.9.0/24"]
-        GW["Gateway\n10.9.9.1"]
-        VIP_N["Kube-VIP\n10.9.9.99"]
-        PVE_N["Proxmox\n10.9.9.20"]
-        INT_LB["Internal LB\n10.9.9.90"]
-    end
-
-    subgraph svc["Services · 10.9.8.0/24"]
-        EXT_LB["External LB\n10.9.8.90"]
-        NAS_N["TrueNAS\n10.9.8.30"]
-        HA_LB["Home Asst.\n10.9.8.80"]
-        QB_LB["qBittorrent\n10.9.8.91–92"]
-    end
-
-    subgraph vpn["WireGuard · 10.9.10.0/24"]
-        WG["Remote\nAccess"]
-    end
-
-    subgraph pods["Pod Network · 10.42.0.0/16"]
-        Flannel_N["Flannel\n(eth1)"]
-    end
-
-    GW --- Internet["Internet"]
-    mgmt -.- svc
-    vpn -.- mgmt
-
-    style mgmt fill:#4299e1,stroke:#2b6cb0,color:#fff
-    style svc fill:#48bb78,stroke:#276749,color:#fff
-    style vpn fill:#805ad5,stroke:#b794f4,color:#fff
-    style pods fill:#ed8936,stroke:#dd6b20,color:#fff
-```
-
-| Domain | Purpose | LoadBalancer |
-|--------|---------|--------------|
-| `*.starktastic.net` | Public services | `10.9.8.90` (external) |
-| `*.internal.starktastic.net` | Internal-only services | `10.9.9.90` (management) |
-| `*.benplus.app` | Media services | `10.9.8.90` (external) |
-
-## Cross-Repo CI/CD Orchestration
-
-Every repository has its own CI/CD workflows, but they're wired together to form one continuous pipeline:
-
-```mermaid
-flowchart TB
-    subgraph packer_ci["Packer"]
-        P_PR["PR: validate + format"]
-        P_Build["Main: build template\n→ GitHub Release"]
-        P_Check["PR gate:\ncheck-host-driver"]
-        P_ISO["Weekly:\ncheck-debian-iso"]
-    end
-
-    subgraph terraform_ci["Terraform"]
-        T_PR["PR: validate + plan\n→ S3 artifact + PR comment"]
-        T_Apply["Main: apply\n(normal / drain / destroy)"]
-        T_Drift["Daily: drift detection\n→ auto GitHub Issue"]
-    end
-
-    subgraph ansible_ci["Ansible"]
-        A_PR["PR: lint + syntax"]
-        A_Deploy["Deploy: k3s.yml\nUpdates org secret\nwith kubeconfig"]
-        A_SRIOV["SR-IOV: upgrade\nhost driver + reboot"]
-        A_Ser2net["ser2net: deploy\nZigbee bridge"]
-    end
-
-    subgraph apps_ci["Apps"]
-        Apps_PR["PR: YAML lint\n+ Kubeconform\n+ ArgoCD diff"]
-        Apps_Refresh["Main: scope-aware\nArgoCD refresh"]
-    end
-
-    P_Build -- "Creates PR\nwith manifest" --> T_PR
-    T_Apply -- "repository_dispatch\ninfrastructure-changed" --> A_Deploy
-    A_Deploy -- "Bootstraps\nArgoCD" --> Apps_Refresh
-
-    style packer_ci fill:#1a1b27,stroke:#4299e1,color:#e2e8f0
-    style terraform_ci fill:#1a1b27,stroke:#805ad5,color:#e2e8f0
-    style ansible_ci fill:#1a1b27,stroke:#48bb78,color:#e2e8f0
-    style apps_ci fill:#1a1b27,stroke:#ed8936,color:#e2e8f0
-```
-
-### Automation Highlights
-
-| Feature | Description |
-|---------|-------------|
-| **Zero-Touch Pipeline** | Packer build → Terraform PR → apply → Ansible deploy → ArgoCD sync — no manual steps |
-| **Renovate Everywhere** | Debian ISOs, Packer plugins, Terraform providers, K3s, Kube-VIP, Helm charts, container images, SR-IOV drivers — all auto-updated |
-| **Coordinated Driver Sync** | SR-IOV driver upgrades span Ansible (host) and Packer (VM template) with a merge-order gate |
-| **Drift Detection** | Daily Terraform plan detects infrastructure drift and auto-creates/closes GitHub issues |
-| **Drain & Destroy Modes** | PR body checkboxes in Terraform enable safe node draining or full teardown |
-| **Scope-Aware Refresh** | Apps repo CI analyzes git diffs to refresh only the affected ArgoCD applications |
-| **Plan Artifact Pipeline** | Terraform plans are saved to S3, reviewed on PR, then applied exactly as previewed |
-| **Kubeconfig Handoff** | Ansible uploads cluster kubeconfig as an org-level secret, enabling Terraform drift checks and apps CI |
-| **Sealed Secrets** | Pre-seeded encryption keys allow encrypted secrets to be committed to Git from day one |
-| **Certificate Restore** | TLS certificates backed up daily to NFS and restored during cluster bootstrap — no re-issuance delay |
-
-## Technology Stack
-
-| Category | Technologies |
-|----------|-------------|
-| **Infrastructure as Code** | Packer · Terraform · Ansible |
-| **Virtualization** | Proxmox VE · Cloud-Init · QEMU/KVM |
-| **Kubernetes** | K3s · Kube-VIP · Flannel · MetalLB |
-| **GitOps** | ArgoCD · ApplicationSets · RollingSync |
-| **Ingress & Routing** | Traefik v3 · IngressRoutes · Let's Encrypt |
-| **Authentication** | Authentik · OIDC · ForwardAuth · LDAP |
-| **Security** | CrowdSec · Sealed Secrets · Cloudflare DNS-01 |
-| **Observability** | Prometheus · Grafana · Loki · Tempo · Alloy |
-| **Alerting** | AlertManager · ntfy (self-hosted push) |
-| **Storage** | TrueNAS Scale · NFS · Garage S3 |
-| **GPU** | Intel SR-IOV i915 · DKMS · Intel Device Plugin Operator |
-| **Databases** | PostgreSQL · Redis |
-| **CI/CD** | GitHub Actions · Renovate · Cross-repo dispatch |
-
-## Getting Started
-
-### Prerequisites
-
-- Proxmox VE with an Intel iGPU supporting SR-IOV
-- GitHub organization with Actions enabled
-- Self-hosted GitHub Actions runner
-- TrueNAS or NFS-capable storage server
-- Garage or S3-compatible storage for Terraform state
-- DNS records for your domains
-
-### Deployment Order
-
-```
-1. Packer    → Build the golden VM template
-2. Terraform → Provision master + worker VMs
-3. Ansible   → Install K3s, bootstrap ArgoCD
-4. Apps      → Everything else deploys automatically via GitOps
-```
-
-After the initial deployment, the pipeline is self-sustaining — Renovate opens PRs, CI validates, and merging triggers the downstream stages automatically.
-
-## License
-
-All repositories are licensed under the MIT License.
+The result: merge a Packer PR → a fully operational cluster with 60+ running services deploys itself, hands-free.
 
 ---
 
-<p align="center">
-  <i>Built with &#10084;&#65039; and way too many late nights</i>
-</p>
+## Architecture Overview
+
+```mermaid
+flowchart TB
+    subgraph hw["Hardware · Intel i7-12700K · 128 GB RAM"]
+        PVE["Proxmox VE"]
+
+        subgraph cluster["K3s Cluster (3 nodes)"]
+            CP["Control Plane\n1× Master · Kube-VIP HA"]
+            WK["Worker Pool\n2× Workers · Intel iGPU SR-IOV"]
+        end
+
+        subgraph storage["Storage"]
+            ZFS["8×14TB HDDs\n2× RAIDz1\nMedia + Backups"]
+            NVME_PV["NVMe SSD\nPersistent Volumes\n(NFS to cluster)"]
+            NVME_VM["NVMe SSD\nVM Disks"]
+        end
+    end
+
+    subgraph platform["Platform Layer"]
+        TRAEFIK["Traefik\nIngress + TLS"]
+        AUTH["Authentik\nSSO (OIDC/LDAP)"]
+        CS["CrowdSec\nIntrusion Detection"]
+        CERT["cert-manager\nLet's Encrypt"]
+        SS["Sealed Secrets\nGitOps-safe encryption"]
+        MLB["MetalLB\nL2 Load Balancer"]
+    end
+
+    subgraph apps["Application Layer (60+ services)"]
+        HA["🏠 Home Automation\nHA · MQTT · Zigbee"]
+        MEDIA["🎬 Media\nStreaming · Acquisition\nGPU Transcoding"]
+        OPS["🔧 Operations\nMonitoring · Docs\nProductivity"]
+    end
+
+    subgraph observe["Observability"]
+        PROM["Prometheus"] --- GRAF["Grafana"]
+        LOKI["Loki"] --- GRAF
+        TEMPO["Tempo"] --- GRAF
+        GRAF --- NTFY["ntfy Alerts"]
+    end
+
+    PVE --> cluster
+    cluster --> platform
+    platform --> apps
+    platform --> observe
+    storage -.-> cluster
+
+    style hw fill:#3C3C3C,color:#fff
+    style platform fill:#7B42BC,color:#fff
+    style apps fill:#326CE5,color:#fff
+    style observe fill:#F46800,color:#fff
+```
+
+---
+
+## Hardware
+
+| Component | Specification |
+|-----------|--------------|
+| **CPU** | Intel Core i7-12700K (12C/20T) |
+| **RAM** | 128 GB DDR4 |
+| **Form Factor** | Desktop tower |
+| **Hypervisor** | Proxmox VE |
+| **Boot** | 2× 2.5" SSDs (RAID 1) |
+| **VM Storage** | 1× NVMe SSD |
+| **Persistent Volumes** | 1× NVMe SSD (NFS-exported to cluster) |
+| **Bulk Storage** | 8× 14TB HDDs (2× RAIDz1 vdevs) |
+| **GPU** | Intel UHD 770 iGPU with SR-IOV (7 virtual functions) |
+| **Network** | Dual VLAN (management + services) |
+
+One machine. Three K3s nodes. 60+ services. Full HA. GPU-accelerated transcoding.
+
+---
+
+## Repositories
+
+| Repository | Purpose | Key Tech |
+|------------|---------|----------|
+| [**📦 packer**](https://github.com/Starktastic-Homelab/packer) | Immutable Debian VM template factory | Packer · HCL · Preseed · Cloud-Init · SR-IOV DKMS |
+| [**🏗️ terraform**](https://github.com/Starktastic-Homelab/terraform) | Declarative VM provisioning with GPU passthrough | Terraform · Proxmox · S3 State · Drift Detection |
+| [**⚙️ ansible**](https://github.com/Starktastic-Homelab/ansible) | K3s cluster setup with HA and GitOps bootstrap | Ansible · K3s · Kube-VIP · ArgoCD · Sealed Secrets |
+| [**☸️ apps**](https://github.com/Starktastic-Homelab/apps) | GitOps application platform (60+ services) | ArgoCD · Helm · Traefik · Authentik · Prometheus |
+
+---
+
+## Engineering Highlights
+
+What makes this more than "just a homelab":
+
+- **🔗 End-to-End Pipeline** — Four repos chain together via GitHub Actions. A Packer build automatically triggers Terraform, which triggers Ansible, which bootstraps ArgoCD. Zero manual steps from image to running cluster.
+
+- **🔄 Infrastructure Drift Detection** — Daily Terraform plans detect and report configuration drift via GitHub Issues, auto-closing when resolved.
+
+- **🔒 Cross-Repo Driver Synchronization** — The Packer CI blocks PR merge if the VM's GPU driver version exceeds the Proxmox host's, preventing boot failures. Renovate coordinates version bumps across repos.
+
+- **📐 4-Phase Ordered Deployment** — ArgoCD's RollingSync deploys CRDs → Foundation → Controllers → Services in strict order, ensuring clean bootstrap from an empty cluster.
+
+- **🧬 Value Cascade Architecture** — A single `globals.yaml` propagates cluster-wide config (domains, IPs, storage) to 60+ services. Changing one value updates everything on the next sync.
+
+- **🎭 Base/Variant Inheritance** — Multi-language service variants inherit 95% of their config from a base service, overriding only what differs in a 3-5 line YAML delta.
+
+- **🔐 Day-Zero Secrets** — Sealed Secrets keypair is pre-seeded by Ansible before ArgoCD deploys, enabling encrypted secrets in Git from the first sync — no chicken-and-egg problem.
+
+- **📡 Full Observability Stack** — Prometheus metrics, Loki logs, Tempo traces, Grafana dashboards, and AlertManager → ntfy push notifications — all deployed via GitOps.
+
+- **🎮 GPU Virtualization** — Intel iGPU SR-IOV exposes 7 virtual functions, shared across workers for hardware-accelerated video transcoding and ML inference.
+
+- **🤖 17 CI/CD Workflows** — Across all repos: automated builds, plan-on-PR, drift detection, manifest validation, ArgoCD diff previews, ISO version tracking, driver sync checks, and scoped refresh.
+
+---
+
+## CI/CD Overview
+
+17 GitHub Actions workflows across all repositories:
+
+| Repo | Workflows | Highlights |
+|------|-----------|------------|
+| **Packer** (5) | build · validate · format · check-debian-iso · check-host-driver | Weekly ISO scraping, cross-repo driver sync |
+| **Terraform** (4) | validate-and-plan · apply · drift · format | Plan-on-PR, daily drift detection, drain/destroy modes |
+| **Ansible** (5) | deploy · validate · format · i915-sriov-upgrade · ser2net | Terraform-triggered deploy, GPU driver lifecycle |
+| **Apps** (3) | validate-and-diff · refresh · format | Kubeconform + ArgoCD diff preview, smart scope refresh |
+
+Every PR gets validated. Every merge triggers the right downstream action. No manual deployment steps exist.
+
+---
+
+<div align="center">
+
+*Built with care, automated with purpose, and maintained with the same rigor I bring to production environments.*
+
+**Ben Faingold** · Senior DevOps Engineer
+
+</div>
