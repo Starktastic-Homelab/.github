@@ -47,9 +47,9 @@ flowchart LR
         K(["☸️ Apps\n60+ services via\nGitOps reconciliation"])
     end
 
-    P ==>|"manifest PR\n(auto-created)"| T
-    T ==>|"repository_dispatch\n(auto-triggered)"| A
-    A ==>|"ArgoCD bootstrap\n(App-of-Apps)"| K
+    P ==>|"manifest PR"| T
+    T ==>|"repository dispatch"| A
+    A ==>|"App-of-Apps"| K
 
     classDef packer fill:#02A8EF,stroke:#0196D4,color:#fff
     classDef terraform fill:#7B42BC,stroke:#6A35A3,color:#fff
