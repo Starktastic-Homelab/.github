@@ -29,37 +29,10 @@ It's not a toy setup. It runs **60+ self-hosted services** across media streamin
 
 The crown jewel of this project is the **end-to-end automation pipeline** — four repositories that chain together through GitHub Actions, each triggering the next:
 
-```mermaid
-flowchart LR
-    subgraph s1["1 · Image Factory"]
-        P(["📦 Packer\nBuild immutable\nDebian template"])
-    end
-
-    subgraph s2["2 · VM Provisioning"]
-        T(["🏗️ Terraform\nClone template into\ncluster VMs"])
-    end
-
-    subgraph s3["3 · Cluster Setup"]
-        A(["⚙️ Ansible\nInstall K3s + HA\nBootstrap ArgoCD"])
-    end
-
-    subgraph s4["4 · Application Layer"]
-        K(["☸️ Apps\n60+ services via\nGitOps reconciliation"])
-    end
-
-    P ==>|"manifest PR"| T
-    T ==>|"repository dispatch"| A
-    A ==>|"App-of-Apps"| K
-
-    classDef packer fill:#02A8EF,stroke:#0196D4,color:#fff
-    classDef terraform fill:#7B42BC,stroke:#6A35A3,color:#fff
-    classDef ansible fill:#EE0000,stroke:#CC0000,color:#fff
-    classDef apps fill:#326CE5,stroke:#2B5FC2,color:#fff
-    class P packer
-    class T terraform
-    class A ansible
-    class K apps
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/pipeline-dark.png">
+  <img alt="The Pipeline" src="docs/diagrams/pipeline.png">
+</picture>
 
 **How it works:**
 
@@ -74,56 +47,10 @@ The result: merge a Packer PR → a fully operational cluster with 60+ running s
 
 ## Architecture Overview
 
-```mermaid
-flowchart TB
-    subgraph hw["Hardware · Intel i7-12700K · 128 GB RAM"]
-        PVE["Proxmox VE"]
-
-        subgraph cluster["K3s Cluster (3 nodes)"]
-            CP["Control Plane\n1× Master · Kube-VIP HA"]
-            WK["Worker Pool\n2× Workers · Intel iGPU SR-IOV"]
-        end
-
-        subgraph storage["Storage"]
-            ZFS[(8×14TB HDDs\n2× RAIDz1\nMedia + Backups)]
-            NVME_PV[(NVMe SSD\nPersistent Volumes\nNFS to cluster)]
-            NVME_VM[(NVMe SSD\nVM Disks)]
-        end
-    end
-
-    subgraph platform["Platform Layer"]
-        TRAEFIK["Traefik\nIngress + TLS"]
-        AUTH{{"Authentik\nSSO (OIDC/LDAP)"}}
-        CS{{"CrowdSec\nIntrusion Detection"}}
-        CERT["cert-manager\nLet's Encrypt"]
-        SS["Sealed Secrets\nGitOps-safe encryption"]
-        MLB["MetalLB\nL2 Load Balancer"]
-    end
-
-    subgraph apps["Application Layer (60+ services)"]
-        HA["🏠 Home Automation\nHA · MQTT · Zigbee"]
-        MEDIA["🎬 Media\nStreaming · Acquisition\nGPU Transcoding"]
-        OPS["🔧 Operations\nMonitoring · Docs\nProductivity"]
-    end
-
-    subgraph observe["Observability"]
-        PROM[(Prometheus)] --- GRAF["Grafana"]
-        LOKI[(Loki)] --- GRAF
-        TEMPO[(Tempo)] --- GRAF
-        GRAF --- NTFY(["ntfy Alerts"])
-    end
-
-    PVE --> cluster
-    cluster ==> platform
-    platform ==> apps
-    platform ==> observe
-    storage -.-> cluster
-
-    style hw fill:#3C3C3C,color:#fff
-    style platform fill:#7B42BC,color:#fff
-    style apps fill:#326CE5,color:#fff
-    style observe fill:#F46800,color:#fff
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/architecture-overview-dark.png">
+  <img alt="Architecture Overview" src="docs/diagrams/architecture-overview.png">
+</picture>
 
 ---
 
@@ -136,9 +63,11 @@ flowchart TB
 | **Form Factor** | Desktop tower |
 | **Hypervisor** | Proxmox VE |
 | **Boot** | 2× 2.5" SSDs (RAID 1) |
-| **VM Storage** | 1× NVMe SSD |
-| **Persistent Volumes** | 1× NVMe SSD (NFS-exported to cluster) |
-| **Bulk Storage** | 8× 14TB HDDs (2× RAIDz1 vdevs) |
+| **VM Storage** | NVMe SSD (`os_storage` — VM / OS disks) |
+| **NAS** | TrueNAS VM (HBA passthrough) · NFS `10.9.8.30` on services VLAN |
+| **Bulk Storage** | 8× 14TB HDDs · 2× RAIDz1 (media + backups) |
+| **Cache / Active Downloads** | 1× 1TB NVMe · ZFS L2ARC + `incomplete-storage` dataset |
+| **Persistent Volumes** | NFS-provisioned from TrueNAS RAIDz1 pools |
 | **GPU** | Intel UHD 770 iGPU with SR-IOV (7 virtual functions) |
 | **Network** | Dual VLAN (management + services) |
 
@@ -179,20 +108,20 @@ What makes this more than "just a homelab":
 
 - **🎮 GPU Virtualization** — Intel iGPU SR-IOV exposes 7 virtual functions, shared across workers for hardware-accelerated video transcoding and ML inference.
 
-- **🤖 17 CI/CD Workflows** — Across all repos: automated builds, plan-on-PR, drift detection, manifest validation, ArgoCD diff previews, ISO version tracking, driver sync checks, and scoped refresh.
+- **🤖 18 CI/CD Workflows** — Across all repos: automated builds, plan-on-PR, drift detection, manifest validation, ArgoCD diff previews, ISO version tracking, driver sync checks, scoped refresh, and weekly image vulnerability scanning.
 
 ---
 
 ## CI/CD Overview
 
-17 GitHub Actions workflows across all repositories:
+18 GitHub Actions workflows across all repositories:
 
 | Repo | Workflows | Highlights |
 |------|-----------|------------|
 | **Packer** (5) | build · validate · format · check-debian-iso · check-host-driver | Weekly ISO scraping, cross-repo driver sync |
 | **Terraform** (4) | validate-and-plan · apply · drift · format | Plan-on-PR, daily drift detection, drain/destroy modes |
 | **Ansible** (5) | deploy · validate · format · i915-sriov-upgrade · ser2net | Terraform-triggered deploy, GPU driver lifecycle |
-| **Apps** (3) | validate-and-diff · refresh · format | Kubeconform + ArgoCD diff preview, smart scope refresh |
+| **Apps** (4) | validate-and-diff · refresh · format · image-scan | Kubeconform + ArgoCD diff preview, smart scope refresh, weekly Trivy scan → GitHub Security tab |
 
 Every PR gets validated. Every merge triggers the right downstream action. No manual deployment steps exist.
 
