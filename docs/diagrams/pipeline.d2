@@ -1,0 +1,19 @@
+# Showcase pipeline: four chained repos, each GitHub Action triggering the next.
+direction: right
+
+packer: "Packer\nBuild immutable\nDebian template" {
+  icon: ./icons/packer.svg
+}
+terraform: "Terraform\nClone template into\ncluster VMs" {
+  icon: ./icons/terraform.svg
+}
+ansible: "Ansible\nInstall K3s + HA\nBootstrap ArgoCD" {
+  icon: ./icons/ansible.svg
+}
+apps: "Apps\n60+ services via\nGitOps reconciliation" {
+  icon: ./icons/argocd.svg
+}
+
+packer -> terraform: manifest PR
+terraform -> ansible: repository dispatch
+ansible -> apps: App-of-Apps

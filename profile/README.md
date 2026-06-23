@@ -29,37 +29,10 @@ It's not a toy setup. It runs **60+ self-hosted services** across media streamin
 
 The crown jewel of this project is the **end-to-end automation pipeline** — four repositories that chain together through GitHub Actions, each triggering the next:
 
-```mermaid
-flowchart LR
-    subgraph s1["1 · Image Factory"]
-        P(["📦 Packer\nBuild immutable\nDebian template"])
-    end
-
-    subgraph s2["2 · VM Provisioning"]
-        T(["🏗️ Terraform\nClone template into\ncluster VMs"])
-    end
-
-    subgraph s3["3 · Cluster Setup"]
-        A(["⚙️ Ansible\nInstall K3s + HA\nBootstrap ArgoCD"])
-    end
-
-    subgraph s4["4 · Application Layer"]
-        K(["☸️ Apps\n60+ services via\nGitOps reconciliation"])
-    end
-
-    P ==>|"manifest PR"| T
-    T ==>|"repository dispatch"| A
-    A ==>|"App-of-Apps"| K
-
-    classDef packer fill:#02A8EF,stroke:#0196D4,color:#fff
-    classDef terraform fill:#7B42BC,stroke:#6A35A3,color:#fff
-    classDef ansible fill:#EE0000,stroke:#CC0000,color:#fff
-    classDef apps fill:#326CE5,stroke:#2B5FC2,color:#fff
-    class P packer
-    class T terraform
-    class A ansible
-    class K apps
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/pipeline-dark.png">
+  <img alt="The Pipeline" src="docs/diagrams/pipeline.png">
+</picture>
 
 **How it works:**
 
