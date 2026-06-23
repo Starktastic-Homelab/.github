@@ -30,8 +30,8 @@ It's not a toy setup. It runs **60+ self-hosted services** across media streamin
 The crown jewel of this project is the **end-to-end automation pipeline** — four repositories that chain together through GitHub Actions, each triggering the next:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/pipeline-dark.png">
-  <img alt="The Pipeline" src="docs/diagrams/pipeline.png">
+  <source media="(prefers-color-scheme: dark)" srcset="../docs/diagrams/pipeline-dark.png">
+  <img alt="The Pipeline" src="../docs/diagrams/pipeline.png">
 </picture>
 
 **How it works:**
@@ -48,8 +48,8 @@ The result: merge a Packer PR → a fully operational cluster with 60+ running s
 ## Architecture Overview
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/architecture-overview-dark.png">
-  <img alt="Architecture Overview" src="docs/diagrams/architecture-overview.png">
+  <source media="(prefers-color-scheme: dark)" srcset="../docs/diagrams/architecture-overview-dark.png">
+  <img alt="Architecture Overview" src="../docs/diagrams/architecture-overview.png">
 </picture>
 
 ---
