@@ -108,20 +108,20 @@ What makes this more than "just a homelab":
 
 - **🎮 GPU Virtualization** — Intel iGPU SR-IOV exposes 7 virtual functions, shared across workers for hardware-accelerated video transcoding and ML inference.
 
-- **🤖 17 CI/CD Workflows** — Across all repos: automated builds, plan-on-PR, drift detection, manifest validation, ArgoCD diff previews, ISO version tracking, driver sync checks, and scoped refresh.
+- **🤖 18 CI/CD Workflows** — Across all repos: automated builds, plan-on-PR, drift detection, manifest validation, ArgoCD diff previews, ISO version tracking, driver sync checks, scoped refresh, and weekly image vulnerability scanning.
 
 ---
 
 ## CI/CD Overview
 
-17 GitHub Actions workflows across all repositories:
+18 GitHub Actions workflows across all repositories:
 
 | Repo | Workflows | Highlights |
 |------|-----------|------------|
 | **Packer** (5) | build · validate · format · check-debian-iso · check-host-driver | Weekly ISO scraping, cross-repo driver sync |
 | **Terraform** (4) | validate-and-plan · apply · drift · format | Plan-on-PR, daily drift detection, drain/destroy modes |
 | **Ansible** (5) | deploy · validate · format · i915-sriov-upgrade · ser2net | Terraform-triggered deploy, GPU driver lifecycle |
-| **Apps** (3) | validate-and-diff · refresh · format | Kubeconform + ArgoCD diff preview, smart scope refresh |
+| **Apps** (4) | validate-and-diff · refresh · format · image-scan | Kubeconform + ArgoCD diff preview, smart scope refresh, weekly Trivy scan → GitHub Security tab |
 
 Every PR gets validated. Every merge triggers the right downstream action. No manual deployment steps exist.
 
