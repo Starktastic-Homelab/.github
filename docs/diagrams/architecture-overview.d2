@@ -1,0 +1,58 @@
+# Whole-stack overview: Hardware -> Platform -> Apps -> Observability, with the storage
+# model corrected (TrueNAS NFS VM serves PersistentVolumes; ZFS pools + NVMe roles shown).
+direction: down
+
+hw: "Hardware · Intel i7-12700K · 128 GB RAM" {
+  pve: "Proxmox VE" {icon: ./icons/proxmox.svg}
+
+  cluster: K3s Cluster (3 nodes) {
+    cp: "Control Plane\n1× Master · Kube-VIP HA" {icon: ./icons/kubernetes.svg}
+    wk: "Worker Pool\n2× Workers · Intel iGPU SR-IOV" {icon: ./icons/kubernetes.svg}
+  }
+
+  truenas: "TrueNAS (VM)\nHBA passthrough · NFS 10.9.8.30" {
+    icon: ./icons/truenas.svg
+    media: "2× RAIDz1\n8×14TB HDD — media + backups" {shape: cylinder}
+    cache: "1TB NVMe\nL2ARC + incomplete-storage" {shape: cylinder}
+  }
+
+  os: "os_storage (NVMe)\nVM / OS disks" {shape: cylinder}
+}
+
+platform: Platform Layer {
+  traefik: "Traefik\nIngress + TLS" {icon: ./icons/traefik.svg}
+  auth: "Authentik\nSSO (OIDC/LDAP)" {icon: ./icons/authentik.svg}
+  cs: "CrowdSec\nIntrusion Detection" {icon: ./icons/crowdsec.svg}
+  cert: "cert-manager\nLet's Encrypt" {icon: ./icons/cert-manager.svg}
+  ss: "Sealed Secrets\nGitOps-safe encryption"
+  mlb: "MetalLB\nL2 Load Balancer" {icon: ./icons/metallb.svg}
+}
+
+apps: Application Layer (60+ services) {
+  home: "Home Automation\nHA · MQTT · Zigbee"
+  media: "Media\nStreaming · Acquisition · GPU Transcoding"
+  ops: "Operations\nMonitoring · Docs · Productivity"
+}
+
+observe: Observability {
+  prom: Prometheus {icon: ./icons/prometheus.svg}
+  loki: Loki {icon: ./icons/loki.svg}
+  tempo: Tempo {icon: ./icons/tempo.svg}
+  graf: Grafana {icon: ./icons/grafana.svg}
+  ntfy: "ntfy Alerts" {icon: ./icons/ntfy.svg}
+}
+
+hw.pve -> hw.cluster: hosts
+hw.pve -> hw.truenas: hosts
+hw.cluster.cp -> hw.os: VM disk
+hw.cluster.wk -> hw.os: VM disk
+hw.truenas -> hw.cluster: NFS PersistentVolumes (nfs-provisioner)
+
+hw.cluster -> platform: runs
+platform -> apps: serves
+platform -> observe: serves
+
+observe.prom -> observe.graf
+observe.loki -> observe.graf
+observe.tempo -> observe.graf
+observe.graf -> observe.ntfy

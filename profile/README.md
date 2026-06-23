@@ -47,56 +47,10 @@ The result: merge a Packer PR → a fully operational cluster with 60+ running s
 
 ## Architecture Overview
 
-```mermaid
-flowchart TB
-    subgraph hw["Hardware · Intel i7-12700K · 128 GB RAM"]
-        PVE["Proxmox VE"]
-
-        subgraph cluster["K3s Cluster (3 nodes)"]
-            CP["Control Plane\n1× Master · Kube-VIP HA"]
-            WK["Worker Pool\n2× Workers · Intel iGPU SR-IOV"]
-        end
-
-        subgraph storage["Storage"]
-            ZFS[(8×14TB HDDs\n2× RAIDz1\nMedia + Backups)]
-            NVME_PV[(NVMe SSD\nPersistent Volumes\nNFS to cluster)]
-            NVME_VM[(NVMe SSD\nVM Disks)]
-        end
-    end
-
-    subgraph platform["Platform Layer"]
-        TRAEFIK["Traefik\nIngress + TLS"]
-        AUTH{{"Authentik\nSSO (OIDC/LDAP)"}}
-        CS{{"CrowdSec\nIntrusion Detection"}}
-        CERT["cert-manager\nLet's Encrypt"]
-        SS["Sealed Secrets\nGitOps-safe encryption"]
-        MLB["MetalLB\nL2 Load Balancer"]
-    end
-
-    subgraph apps["Application Layer (60+ services)"]
-        HA["🏠 Home Automation\nHA · MQTT · Zigbee"]
-        MEDIA["🎬 Media\nStreaming · Acquisition\nGPU Transcoding"]
-        OPS["🔧 Operations\nMonitoring · Docs\nProductivity"]
-    end
-
-    subgraph observe["Observability"]
-        PROM[(Prometheus)] --- GRAF["Grafana"]
-        LOKI[(Loki)] --- GRAF
-        TEMPO[(Tempo)] --- GRAF
-        GRAF --- NTFY(["ntfy Alerts"])
-    end
-
-    PVE --> cluster
-    cluster ==> platform
-    platform ==> apps
-    platform ==> observe
-    storage -.-> cluster
-
-    style hw fill:#3C3C3C,color:#fff
-    style platform fill:#7B42BC,color:#fff
-    style apps fill:#326CE5,color:#fff
-    style observe fill:#F46800,color:#fff
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/architecture-overview-dark.png">
+  <img alt="Architecture Overview" src="docs/diagrams/architecture-overview.png">
+</picture>
 
 ---
 
@@ -109,9 +63,11 @@ flowchart TB
 | **Form Factor** | Desktop tower |
 | **Hypervisor** | Proxmox VE |
 | **Boot** | 2× 2.5" SSDs (RAID 1) |
-| **VM Storage** | 1× NVMe SSD |
-| **Persistent Volumes** | 1× NVMe SSD (NFS-exported to cluster) |
-| **Bulk Storage** | 8× 14TB HDDs (2× RAIDz1 vdevs) |
+| **VM Storage** | NVMe SSD (`os_storage` — VM / OS disks) |
+| **NAS** | TrueNAS VM (HBA passthrough) · NFS `10.9.8.30` on services VLAN |
+| **Bulk Storage** | 8× 14TB HDDs · 2× RAIDz1 (media + backups) |
+| **Cache / Active Downloads** | 1× 1TB NVMe · ZFS L2ARC + `incomplete-storage` dataset |
+| **Persistent Volumes** | NFS-provisioned from TrueNAS RAIDz1 pools |
 | **GPU** | Intel UHD 770 iGPU with SR-IOV (7 virtual functions) |
 | **Network** | Dual VLAN (management + services) |
 
