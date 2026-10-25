@@ -41,7 +41,7 @@ The crown jewel of this project is the **end-to-end automation pipeline** — fo
 3. **Ansible** installs K3s with HA (Kube-VIP), pre-seeds secrets, restores TLS certificates from backup, and deploys ArgoCD with SSO — which immediately points at the Apps repo
 4. **ArgoCD** takes over and reconciles the entire application layer through a 4-phase ordered deployment, pulling from the Apps repo as the single source of truth
 
-The result: merge a Packer PR → a fully operational cluster with 60+ running services deploys itself, hands-free.
+The result: merge a Packer PR, then the Terraform PR it opens → a fully operational cluster with 60+ running services deploys itself.
 
 ---
 
@@ -90,7 +90,7 @@ One machine. Three K3s nodes. 60+ services. Full HA. GPU-accelerated transcoding
 
 What makes this more than "just a homelab":
 
-- **🔗 End-to-End Pipeline** — Four repos chain together via GitHub Actions. A Packer build automatically triggers Terraform, which triggers Ansible, which bootstraps ArgoCD. Zero manual steps from image to running cluster.
+- **🔗 End-to-End Pipeline** — Four repos chain together via GitHub Actions. A Packer build opens a manifest PR in Terraform; merging it applies and triggers Ansible, which bootstraps ArgoCD. That merge is the only manual step from image to running cluster.
 
 - **🔄 Infrastructure Drift Detection** — Daily Terraform plans detect and report configuration drift via GitHub Issues, auto-closing when resolved.
 
@@ -108,22 +108,22 @@ What makes this more than "just a homelab":
 
 - **🎮 GPU Virtualization** — Intel iGPU SR-IOV exposes 7 virtual functions, shared across workers for hardware-accelerated video transcoding and ML inference.
 
-- **🤖 18 CI/CD Workflows** — Across all repos: automated builds, plan-on-PR, drift detection, manifest validation, ArgoCD diff previews, ISO version tracking, driver sync checks, scoped refresh, and weekly image vulnerability scanning.
+- **🤖 23 CI/CD Workflows** — Across all repos: automated builds, plan-on-PR, drift detection, manifest validation, ArgoCD diff previews, ISO version tracking, driver sync checks, scoped refresh, and weekly image vulnerability scanning.
 
 ---
 
 ## CI/CD Overview
 
-18 GitHub Actions workflows across all repositories:
+23 GitHub Actions workflows across the four pipeline repositories:
 
 | Repo | Workflows | Highlights |
 |------|-----------|------------|
-| **Packer** (5) | build · validate · format · check-debian-iso · check-host-driver | Weekly ISO scraping, cross-repo driver sync |
-| **Terraform** (4) | validate-and-plan · apply · drift · format | Plan-on-PR, daily drift detection, drain/destroy modes |
-| **Ansible** (5) | deploy · validate · format · i915-sriov-upgrade · ser2net | Terraform-triggered deploy, GPU driver lifecycle |
-| **Apps** (4) | validate-and-diff · refresh · format · image-scan | Kubeconform + ArgoCD diff preview, smart scope refresh, weekly Trivy scan → GitHub Security tab |
+| **Packer** (5) | build · validate · format · check-debian-iso · i915-compat | Weekly ISO scraping, cross-repo driver sync |
+| **Terraform** (5) | validate-and-plan · apply · drift · format · diagrams | Plan-on-PR, daily drift detection, drain/destroy modes |
+| **Ansible** (8) | deploy · validate · format · i915-compat · i915-sriov-upgrade · i915-acceptance · csi-activation-preflight · ser2net | Terraform-triggered deploy, GPU driver lifecycle |
+| **Apps** (5) | validate-and-diff · refresh · format · image-scan · diagrams | Kubeconform + ArgoCD diff preview, smart scope refresh, weekly Trivy scan → GitHub Security tab |
 
-Every PR gets validated. Every merge triggers the right downstream action. No manual deployment steps exist.
+Every PR gets validated. Every merge triggers the right downstream action. The only manual step is merging the PR.
 
 ---
 
