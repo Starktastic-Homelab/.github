@@ -120,7 +120,7 @@ What makes this more than "just a homelab":
 |------|-----------|------------|
 | **Packer** (5) | build · validate · format · check-debian-iso · i915-compat | Weekly ISO scraping, cross-repo driver sync |
 | **Terraform** (5) | validate-and-plan · apply · drift · format · diagrams | Plan-on-PR, daily drift detection, drain/destroy modes |
-| **Ansible** (8) | deploy · validate · format · i915-compat · i915-sriov-upgrade · i915-acceptance · csi-activation-preflight · ser2net | Terraform-triggered deploy, GPU driver lifecycle |
+| **Ansible** (10) | deploy · validate · format · i915-compat · i915-sriov-upgrade · i915-acceptance · csi-activation-preflight · ser2net · proxmox-backup · proxmox-guest-startup | Terraform-triggered deploy, GPU driver lifecycle |
 | **Apps** (5) | validate-and-diff · refresh · format · image-scan · diagrams | Kubeconform + ArgoCD diff preview, smart scope refresh, weekly Trivy scan → GitHub Security tab |
 
 Every PR gets validated. Every merge triggers the right downstream action. The only manual step is merging the PR.
