@@ -49,6 +49,7 @@ only `README.md`, `renovate.json` and a few ansible host paths. Put `[skip ci]` 
 | Sealed-secrets key and cert | ansible `roles/bootstrap_cluster/tasks/main.yml` | apps `scripts/sealed-secrets-cert.pem`, `scripts/seal.sh`; ansible `csi-activation-preflight.yml` (pins apps by SHA) |
 | Worker labels | ansible `roles/k3s_workers/tasks/main.yml` | apps `infrastructure/system/proxmox-csi/values.yaml`, `infrastructure/system/intel-device-operator/manifests/gpu-device-plugin.yaml` |
 | Cert backup → restore | apps `infrastructure/base-configs/templates/cert-backup/` | ansible `roles/bootstrap_cluster/tasks/restore-certs.yml` |
+| Backup inputs (dumps, image names, Immich share) | apps `infrastructure/base-configs/templates/{pg-backup,cert-backup}/`, the Immich DB dump, `vm-9999-*` PV names, `main/immich` share | ansible `roles/proxmox_backup/defaults/main.yml` (`proxmox_backup_dump_rules`, `proxmox_backup_excludes`, `proxmox_backup_nfs_sources`), `docs/backup-and-restore.md` |
 | NFS server and path | apps `templates/globals.yaml`, `infrastructure/system/nfs-provisioner/values.yaml` | ansible `group_vars/all/vars.yml` |
 | Diagram tooling (copies) | `.github` `scripts/render-diagrams.sh`, `scripts/check-readme-images.py`, `.github/workflows/diagrams.yml` | the same files in terraform and apps |
 
@@ -58,7 +59,7 @@ only `README.md`, `renovate.json` and a few ansible host paths. Put `[skip ci]` 
 |---|---|
 | Template image, guest i915 pair, Debian ISO | packer |
 | VM count, sizes, IPs, VMIDs, tags, CSI resource pool | terraform |
-| K3s and kube-vip versions, host i915 pin, CSI slot budget and topology, lock helper, ArgoCD install | ansible |
+| K3s and kube-vip versions, host i915 pin, CSI slot budget and topology, lock helper, ArgoCD install, host backup (replica pool, restic, timers, crash guard) | ansible |
 | Workloads, storage classes and PVs, image versions | apps |
 | Cross-repo overview, diagrams, shared Claude settings | .github |
 
