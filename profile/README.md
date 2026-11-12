@@ -106,6 +106,8 @@ What makes this more than "just a homelab":
 
 - **📡 Full Observability Stack** — Prometheus metrics, Loki logs, Tempo traces, Grafana dashboards, and AlertManager → ntfy push notifications — all deployed via GitOps.
 
+- **💾 Tested Backups** — TrueNAS replicates app volumes every 6 hours to an encrypted pool on a portable SSD, and each night restic sends them and the Immich photos off-site to a Hetzner Storage Box, with the runner VM's weekly dump. healthchecks.io watches every run and Alertmanager's own heartbeat from outside the cluster, and a restore drill checks the copies byte for byte.
+
 - **🎮 GPU Virtualization** — Intel iGPU SR-IOV exposes 7 virtual functions, shared across workers for hardware-accelerated video transcoding and ML inference.
 
 - **🤖 23 CI/CD Workflows** — Across all repos: automated builds, plan-on-PR, drift detection, manifest validation, ArgoCD diff previews, ISO version tracking, driver sync checks, scoped refresh, and weekly image vulnerability scanning.
