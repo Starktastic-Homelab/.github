@@ -67,9 +67,9 @@ NFS server and path are duplicated in apps and ansible with no single owner. TOD
 
 ## Shared rules
 
-- **Runner:** every self-hosted job uses the bare `self-hosted` label. The repos describe it as amd64 VM300
-  on the Proxmox host (maintenance state in `/var/lib/homelab-maintenance`), so a host reboot takes it down.
-  TODO(ben): verify (it has also been described as a Raspberry Pi).
+- **Runner:** every self-hosted job uses the bare `self-hosted` label. It is amd64 VM300 on the Proxmox host
+  (maintenance state in `/var/lib/homelab-maintenance`), so a host reboot takes it down. It is not a
+  Raspberry Pi (Ben, 2026-11-14).
 - **Secrets:** all five repos are public. Refer to secrets by name only (`ORG_DISPATCH_TOKEN`,
   `KUBECONFIG_RAW`, the per-repo Proxmox, S3 and vault names); never read or print values. Never read
   `id_rsa*`, `pve-creds.txt`, `runner-ssh.sh`, `*.key` or `.recovery/` in the parent folder, or any
