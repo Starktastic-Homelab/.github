@@ -5,7 +5,6 @@
 <p align="center">
   <a href="https://github.com/Starktastic-Homelab/packer/actions/workflows/build.yml"><img src="https://github.com/Starktastic-Homelab/packer/actions/workflows/build.yml/badge.svg" alt="packer build"></a>
   <a href="https://github.com/Starktastic-Homelab/terraform/actions/workflows/apply.yml"><img src="https://github.com/Starktastic-Homelab/terraform/actions/workflows/apply.yml/badge.svg" alt="terraform apply"></a>
-  <a href="https://github.com/Starktastic-Homelab/terraform/actions/workflows/drift.yml"><img src="https://github.com/Starktastic-Homelab/terraform/actions/workflows/drift.yml/badge.svg" alt="terraform drift detection"></a>
   <a href="https://github.com/Starktastic-Homelab/ansible/actions/workflows/deploy.yml"><img src="https://github.com/Starktastic-Homelab/ansible/actions/workflows/deploy.yml/badge.svg" alt="ansible deploy"></a>
   <a href="https://github.com/Starktastic-Homelab/apps/actions/workflows/refresh.yaml"><img src="https://github.com/Starktastic-Homelab/apps/actions/workflows/refresh.yaml/badge.svg" alt="apps refresh"></a>
 </p>
@@ -42,8 +41,8 @@ in four ordered waves.
 </p>
 
 Workflows on the self-hosted runner reach the Proxmox API and the cluster; the runner is itself a VM on
-the same host. Terraform's apply and Ansible's deploy take the same maintenance lock, so two disruptive
-runs never overlap.
+the same host. Terraform's apply and Ansible's deploy take the same maintenance lock, so the two never
+run at once. Path filters are left out of the tables below; each repository's README has them.
 
 <details>
 <summary><b>packer</b>: 5 workflows</summary>
@@ -67,7 +66,7 @@ runs never overlap.
 | `apply.yml` | pull request merged, manual | Applies the saved plan under the maintenance lock; dispatches ansible if anything changed |
 | `drift.yml` | daily 08:00 UTC, manual | Plans against the live state; opens, updates or closes a drift issue |
 | `format.yml` | pull request, manual | Formats Terraform, YAML and JSON, and commits the result |
-| `diagrams.yml` | pull request | Checks that every image a Markdown file references exists |
+| `readme-images.yml` | pull request that touches Markdown or `docs/diagrams/` | Checks that every image a Markdown file references exists |
 
 </details>
 
@@ -98,7 +97,7 @@ runs never overlap.
 | `refresh.yaml` | push to `main`, manual | Tells Argo CD to refresh the apps a commit touched; it never syncs |
 | `format.yaml` | pull request | Formats YAML, JSON and shell, and commits the result |
 | `image-scan.yml` | Mondays 06:00 UTC, manual | Scans the referenced container images with Trivy and uploads the results to the Security tab |
-| `diagrams.yml` | pull request | Checks that every image a Markdown file references exists |
+| `readme-images.yml` | pull request that touches Markdown or `docs/diagrams/` | Checks that every image a Markdown file references exists |
 
 </details>
 
@@ -107,7 +106,7 @@ runs never overlap.
 
 | Workflow | Runs on | What it does |
 |---|---|---|
-| `diagrams.yml` | pull request | Checks that every image a Markdown file references exists |
+| `readme-images.yml` | pull request that touches Markdown or `docs/diagrams/` | Checks that every image a Markdown file references exists |
 
 </details>
 
@@ -121,7 +120,7 @@ runs never overlap.
 |---|---|
 | **CPU** | Intel Core i7-12700K (12 cores, 20 threads) |
 | **Memory** | 128 GB DDR4 |
-| **GPU** | Intel UHD 770 with SR-IOV; virtual functions go to the K3s workers for transcoding and inference |
+| **GPU** | Intel UHD 770 split into seven SR-IOV virtual functions; each K3s worker gets one for transcoding and inference |
 | **Hypervisor** | Proxmox VE on a mirrored pair of SSDs |
 | **VM disks** | NVMe |
 | **NAS** | TrueNAS in a VM with the disk controller passed through: 8× 14 TB HDD in two RAIDz1 pools |
@@ -132,7 +131,8 @@ runs never overlap.
 ## What is unusual here
 
 - **The plan that was reviewed is the plan that runs.** `validate-and-plan.yml` saves the plan file from
-  the pull request, and `apply.yml` applies that file after the merge.
+  the pull request, and an ordinary merge applies that exact file. Only the destroy mode and a manual run
+  plan again.
 - **Drift becomes an issue.** A daily plan against the live state opens an issue when the two differ and
   closes it when they agree again.
 - **A GPU driver gate in two repositories.** The guest driver lives in the image and the host driver on

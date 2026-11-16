@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1100" height="900" viewBox="0 0 1100 900" role="img" aria-labelledby="t d">
   <title id="t">Workflow map: 26 GitHub Actions workflows across five repositories</title>
-  <desc id="d">Workflows per repository, grouped by trigger. On pull request: packer i915-compat, validate, format; terraform validate-and-plan, format, diagrams; ansible i915-compat, validate, format; apps validate-and-diff, format, diagrams. A person merges the pull request. On merge to main: packer build opens a manifest pull request in terraform; terraform apply sends a repository dispatch to ansible deploy; deploy installs Argo CD, which pulls the apps repository, and writes the KUBECONFIG_RAW secret used by terraform apply and apps refresh. Ansible also runs i915-sriov-upgrade, proxmox-backup, proxmox-guest-startup and ser2net when their paths change. Scheduled or manual: packer check-debian-iso, terraform drift, ansible i915-acceptance and csi-activation-preflight, apps image-scan. The .github repository has one workflow, diagrams.</desc>
+  <desc id="d">Workflows per repository, grouped by trigger. On pull request: packer i915-compat, validate, format; terraform validate-and-plan, format, readme-images; ansible i915-compat, validate, format; apps validate-and-diff, format, readme-images. A person merges the pull request. On merge to main: packer build opens a manifest pull request in terraform; terraform apply sends a repository dispatch to ansible deploy; deploy installs Argo CD, which pulls the apps repository, and writes the KUBECONFIG_RAW secret used by terraform apply and apps refresh. Ansible also runs i915-sriov-upgrade, proxmox-backup, proxmox-guest-startup and ser2net when their paths change. Scheduled or manual: packer check-debian-iso, terraform drift, ansible i915-acceptance and csi-activation-preflight, apps image-scan. The .github repository has one workflow, readme-images.</desc>
   <defs>
     <radialGradient id="ga"><stop offset="0" stop-color="#3B82F6" stop-opacity=".55"/><stop offset="1" stop-color="#3B82F6" stop-opacity="0"/></radialGradient>
     <radialGradient id="gb"><stop offset="0" stop-color="#6366F1" stop-opacity=".45"/><stop offset="1" stop-color="#6366F1" stop-opacity="0"/></radialGradient>
@@ -55,6 +55,8 @@
     .gate { fill: none; stroke: #FBBF24; stroke-opacity: .7; stroke-width: 1.5; stroke-dasharray: 6 6; }
     .tag { fill: #151936; stroke: #8A94B8; stroke-opacity: .5; }
     .tagt { fill: #C9D1EA; }
+    .here { fill: #13244D; stroke: #60A5FA; }
+    .heret { fill: #DBEAFE; }
     .dim { opacity: .5; }
     @keyframes flow { to { stroke-dashoffset: -24; } }
     @media (prefers-reduced-motion: reduce) { .flow, .side { animation: none; } }
@@ -93,6 +95,8 @@
       .gate { stroke: #D97706; }
       .tag { fill: #FFFFFF; stroke: #64709A; stroke-opacity: .5; }
       .tagt { fill: #2A3358; }
+      .here { fill: #EAF0FF; stroke: #2563EB; }
+      .heret { fill: #1E3A8A; }
     }
   </style>
   <g clip-path="url(#clip)"><rect class="panel" width="1100" height="900"/><g class="blob"><ellipse cx="957" cy="63" rx="429" ry="450" fill="url(#ga)"/><ellipse cx="110" cy="873" rx="429" ry="450" fill="url(#gb)"/><ellipse cx="759" cy="963" rx="385" ry="360" fill="url(#gc)"/></g></g>
@@ -155,13 +159,13 @@
   <rect class="wf" x="116" y="280" width="180" height="28" rx="8"/><text class="wft mono" x="126" y="298.55" font-size="13">format</text>
   <rect class="wf" x="348" y="212" width="184" height="28" rx="8"/><text class="wft mono" x="358" y="230.55" font-size="13">validate-and-plan</text><circle class="dot" cx="520" cy="226" r="3.5"/>
   <rect class="wf" x="348" y="246" width="184" height="28" rx="8"/><text class="wft mono" x="358" y="264.55" font-size="13">format</text>
-  <rect class="wf" x="348" y="280" width="184" height="28" rx="8"/><text class="wft mono" x="358" y="298.55" font-size="13">diagrams</text>
+  <rect class="wf" x="348" y="280" width="184" height="28" rx="8"/><text class="wft mono" x="358" y="298.55" font-size="13">readme-images</text>
   <rect class="wf" x="584" y="212" width="240" height="28" rx="8"/><text class="wft mono" x="594" y="230.55" font-size="13">i915-compat</text>
   <rect class="wf" x="584" y="246" width="240" height="28" rx="8"/><text class="wft mono" x="594" y="264.55" font-size="13">validate</text><circle class="dot" cx="812" cy="260" r="3.5"/>
   <rect class="wf" x="584" y="280" width="240" height="28" rx="8"/><text class="wft mono" x="594" y="298.55" font-size="13">format</text>
   <rect class="wf" x="876" y="212" width="186" height="28" rx="8"/><text class="wft mono" x="886" y="230.55" font-size="13">validate-and-diff</text>
   <rect class="wf" x="876" y="246" width="186" height="28" rx="8"/><text class="wft mono" x="886" y="264.55" font-size="13">format</text>
-  <rect class="wf" x="876" y="280" width="186" height="28" rx="8"/><text class="wft mono" x="886" y="298.55" font-size="13">diagrams</text>
+  <rect class="wf" x="876" y="280" width="186" height="28" rx="8"/><text class="wft mono" x="886" y="298.55" font-size="13">readme-images</text>
 
   <!-- the manual gate -->
   <path class="gate" d="M108 332H1070"/>
@@ -194,8 +198,8 @@
   <g class="t2" font-size="12.5">
     <text x="116" y="508">publishes a release and</text>
     <text x="116" y="525">opens a PR in terraform</text>
-    <text x="348" y="508">applies the saved plan:</text>
-    <text x="348" y="525">normal, drain or destroy</text>
+    <text x="348" y="508">applies the saved plan;</text>
+    <text x="348" y="525">destroy mode plans afresh</text>
     <text x="584" y="464">host playbooks, each on its own paths</text>
     <text x="880" y="434">refresh only, never sync</text>
   </g>
@@ -235,8 +239,8 @@
   <!-- .github -->
   <rect class="lane" x="108" y="768" width="962" height="44" rx="14"/><rect class="rim" x="108.5" y="768.5" width="961" height="43" rx="13.5"/>
   <text class="t1" x="124" y="795" font-size="15" font-weight="800">.github</text>
-  <rect class="wf" x="196" y="776" width="96" height="28" rx="8"/><text class="wft mono" x="206" y="794.55" font-size="13">diagrams</text>
-  <text class="t2" x="306" y="794.5" font-size="12.5">org profile and cross-repo docs; its one workflow checks README images on pull requests</text>
+  <rect class="wf" x="196" y="776" width="128" height="28" rx="8"/><text class="wft mono" x="206" y="794.55" font-size="13">readme-images</text>
+  <text class="t2" x="338" y="794.5" font-size="12.5">org profile and cross-repo docs; its one workflow checks README images on pull requests</text>
 
   <!-- hop legend -->
   <circle class="badge" cx="51" cy="842" r="11"/><text class="badget" x="51" y="846.5" font-size="13" font-weight="800" text-anchor="middle">1</text>

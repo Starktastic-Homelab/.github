@@ -55,6 +55,8 @@
     .gate { fill: none; stroke: #FBBF24; stroke-opacity: .7; stroke-width: 1.5; stroke-dasharray: 6 6; }
     .tag { fill: #151936; stroke: #8A94B8; stroke-opacity: .5; }
     .tagt { fill: #C9D1EA; }
+    .here { fill: #13244D; stroke: #60A5FA; }
+    .heret { fill: #DBEAFE; }
     .dim { opacity: .5; }
     @keyframes flow { to { stroke-dashoffset: -24; } }
     @media (prefers-reduced-motion: reduce) { .flow, .side { animation: none; } }
@@ -93,6 +95,8 @@
       .gate { stroke: #D97706; }
       .tag { fill: #FFFFFF; stroke: #64709A; stroke-opacity: .5; }
       .tagt { fill: #2A3358; }
+      .here { fill: #EAF0FF; stroke: #2563EB; }
+      .heret { fill: #1E3A8A; }
     }
   </style>
   <g clip-path="url(#clip)"><rect class="panel" width="1100" height="580"/><g class="blob"><ellipse cx="957" cy="40.6" rx="429" ry="290" fill="url(#ga)"/><ellipse cx="110" cy="562.6" rx="429" ry="290" fill="url(#gb)"/><ellipse cx="759" cy="620.6" rx="385" ry="232" fill="url(#gc)"/></g></g>
