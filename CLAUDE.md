@@ -12,7 +12,7 @@ loads for every repo under that folder; each repo's own `CLAUDE.md` has its comm
 | `terraform` | K3s VMs cloned from the template | PR merge → apply (`apply.yml`) |
 | `ansible` | Proxmox host, K3s, ArgoCD bootstrap | push or dispatch → full deploy (`deploy.yml`) |
 | `apps` | ArgoCD GitOps workloads | ArgoCD pulls `main`; push → refresh (`refresh.yaml`) |
-| `.github` | Org profile, diagrams, this file, shared Claude settings | PR → diagram render (`diagrams.yml`) |
+| `.github` | Org profile, diagrams, this file, shared Claude settings | PR → README image check (`readme-images.yml`) |
 
 ## Trigger chain
 
@@ -51,7 +51,7 @@ only `README.md`, `renovate.json` and a few ansible host paths. Put `[skip ci]` 
 | Cert backup → restore | apps `infrastructure/base-configs/templates/cert-backup/` | ansible `roles/bootstrap_cluster/tasks/restore-certs.yml` |
 | Backup inputs (dumps, image names, Immich share) | apps `infrastructure/base-configs/templates/{pg-backup,cert-backup}/`, the Immich DB dump, `vm-9999-*` PV names, `main/immich` share | ansible `roles/proxmox_backup/defaults/main.yml` (`proxmox_backup_dump_rules`, `proxmox_backup_excludes`, `proxmox_backup_nfs_sources`), `docs/backup-and-restore.md` |
 | NFS server and path | apps `templates/globals.yaml`, `infrastructure/system/nfs-provisioner/values.yaml` | ansible `group_vars/all/vars.yml` |
-| Diagram tooling (copies) | `.github` `scripts/render-diagrams.sh`, `scripts/check-readme-images.py`, `.github/workflows/diagrams.yml` | the same files in terraform and apps |
+| README image check (copies) | `.github` `scripts/check-readme-images.py`, `.github/workflows/readme-images.yml` | the same files in terraform and apps |
 
 ## Source of truth
 
@@ -91,6 +91,10 @@ NFS server and path are duplicated in apps and ansible with no single owner. TOD
 - Codex leftovers (`codex/*` branches, `.worktrees/`, `~/.codex/worktrees/`, `docs/superpowers/`) are
   history. Don't delete ansible's `codex/storage-maintenance`: CI pins the lock helper to a commit that only
   that branch contains.
+- README diagrams are hand-drawn SVGs in each repo's `docs/diagrams/`, committed as they are (no renderer, no
+  generator). They all carry the same `<style>` block and colour meanings (animated blue = trigger, dashed
+  violet = shared data, grey = structure, amber = a person): restyle them together, and re-count any number
+  drawn into one when the thing it counts changes.
 - Claude settings: each repo's `.claude/settings.json` and `.github/.claude/settings.json` (symlinked as
   `~/Projects/homelab/.claude`) are identical. Settings load only from the launch directory, so change all
   five together.

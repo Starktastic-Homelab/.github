@@ -1,13 +1,14 @@
 # Diagram icons
 
-Vendored brand/tech logos used by the D2 diagrams in `../`. Referenced by relative
-path from the `.d2` sources and baked into the rendered PNGs by rsvg-convert.
+Vendored brand/tech logos. The hand-drawn SVG diagrams in `../` embed copies of these
+marks as inline `<symbol>` elements, so each diagram stays a single self-contained file.
 
 | File | Source | License |
 |------|--------|---------|
 | ansible.svg | devicons/devicon | Red Hat / Ansible trademark |
 | argocd.svg | simpleicons.org | Argo / CNCF mark |
 | authentik.svg | simpleicons.org | Authentik trademark |
+| blackbox.svg | copied from prometheus.svg (no dedicated mark) | Apache-2.0 / CNCF mark substitute for Blackbox Exporter label |
 | cert-manager.svg | homarr-labs/dashboard-icons | cert-manager / CNCF mark |
 | crowdsec.svg | homarr-labs/dashboard-icons | CrowdSec trademark |
 | grafana.svg | devicons/devicon | Grafana Labs trademark |
@@ -24,5 +25,5 @@ path from the `.d2` sources and baked into the rendered PNGs by rsvg-convert.
 | truenas.svg | simpleicons.org | iXsystems trademark |
 
 All marks remain the property of their respective owners and are used here only
-to label the corresponding component in architecture diagrams. Sealed Secrets has
-no dedicated mark and is rendered as a plain labelled node.
+to label the corresponding component in architecture diagrams. A component without a
+vendored mark is drawn with a short monogram instead.

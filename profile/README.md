@@ -1,138 +1,159 @@
-<div align="center">
+<p align="center">
+  <img src="../docs/diagrams/banner.svg" alt="Starktastic Homelab: infrastructure as code. One server, five repositories, 26 workflows, three K3s nodes, 75 apps.">
+</p>
 
-# Starktastic Homelab
+<p align="center">
+  <a href="https://github.com/Starktastic-Homelab/packer/actions/workflows/build.yml"><img src="https://github.com/Starktastic-Homelab/packer/actions/workflows/build.yml/badge.svg" alt="packer build"></a>
+  <a href="https://github.com/Starktastic-Homelab/terraform/actions/workflows/apply.yml"><img src="https://github.com/Starktastic-Homelab/terraform/actions/workflows/apply.yml/badge.svg" alt="terraform apply"></a>
+  <a href="https://github.com/Starktastic-Homelab/ansible/actions/workflows/deploy.yml"><img src="https://github.com/Starktastic-Homelab/ansible/actions/workflows/deploy.yml/badge.svg" alt="ansible deploy"></a>
+  <a href="https://github.com/Starktastic-Homelab/apps/actions/workflows/refresh.yaml"><img src="https://github.com/Starktastic-Homelab/apps/actions/workflows/refresh.yaml/badge.svg" alt="apps refresh"></a>
+</p>
 
-### Production-Grade Infrastructure, Automated End-to-End
+One tower in my home runs a three-node Kubernetes cluster with 60 self-hosted services behind single
+sign-on, intrusion detection, automatic TLS and full observability. Every layer is code in one of five
+repositories, and the repositories are wired together so that a merged pull request rebuilds whatever
+sits below it.
 
-*A fully automated Kubernetes homelab built by **Ben Faingold** — from bare metal to running services in a single pipeline*
+## From image to running apps
 
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://kubernetes.io/)
-[![ArgoCD](https://img.shields.io/badge/ArgoCD-EF7B4D?style=for-the-badge&logo=argo&logoColor=white)](https://argoproj.github.io/cd/)
-[![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)](https://www.terraform.io/)
-[![Ansible](https://img.shields.io/badge/Ansible-EE0000?style=for-the-badge&logo=ansible&logoColor=white)](https://www.ansible.com/)
-[![Packer](https://img.shields.io/badge/Packer-02A8EF?style=for-the-badge&logo=packer&logoColor=white)](https://www.packer.io/)
-[![Proxmox](https://img.shields.io/badge/Proxmox-E57000?style=for-the-badge&logo=proxmox&logoColor=white)](https://www.proxmox.com/)
+<p align="center">
+  <img src="../docs/diagrams/delivery-chain.svg" alt="Delivery chain: packer opens a manifest pull request in terraform; terraform's apply sends a repository dispatch to ansible; ansible's deploy installs K3s and Argo CD, which pulls the apps repository.">
+</p>
 
-</div>
+Each repository owns one stage and hands the next stage exactly one thing.
+
+| Repository | Owns | Hands over |
+|---|---|---|
+| [**packer**](https://github.com/Starktastic-Homelab/packer) | The Debian 13 VM template (VM 900), with the guest GPU driver baked in | A manifest, as a pull request in terraform |
+| [**terraform**](https://github.com/Starktastic-Homelab/terraform) | The K3s VMs: one control plane and two workers cloned from the template | A `repository_dispatch` to ansible |
+| [**ansible**](https://github.com/Starktastic-Homelab/ansible) | The Proxmox host, K3s, and the Argo CD bootstrap | A root app pointing at apps, and the kubeconfig as an organization secret |
+| [**apps**](https://github.com/Starktastic-Homelab/apps) | Every workload: 15 infrastructure apps and 60 services, reconciled by Argo CD | The running platform |
+| [**.github**](https://github.com/Starktastic-Homelab/.github) | This page and the cross-repo contracts | |
+
+The only manual step is the merge. Merging the manifest pull request replaces the three K3s VMs with
+clones of the new image, the deploy reinstalls K3s on them, and Argo CD brings back all 75 apps from Git
+in four ordered waves.
+
+## Every workflow, one map
+
+<p align="center">
+  <img src="../docs/diagrams/workflow-map.svg" alt="Workflow map: all 26 GitHub Actions workflows in the five repositories, grouped by trigger, with the cross-repository links between them.">
+</p>
+
+Workflows on the self-hosted runner reach the Proxmox API and the cluster; the runner is itself a VM on
+the same host. Terraform's apply and Ansible's deploy take the same maintenance lock, so the two never
+run at once. Path filters are left out of the tables below; each repository's README has them.
+
+<details>
+<summary><b>packer</b>: 5 workflows</summary>
+
+| Workflow | Runs on | What it does |
+|---|---|---|
+| `build.yml` | push to `main`, manual | Builds the template, publishes a release, opens the manifest pull request in terraform |
+| `validate.yml` | pull request | Validates the Packer template |
+| `i915-compat.yml` | pull request, manual | Checks the guest GPU driver pin against the host pin in ansible |
+| `format.yml` | pull request, manual | Formats HCL, YAML, JSON and shell, and commits the result |
+| `check-debian-iso.yml` | Fridays 09:00 UTC, manual | Opens a pull request when Debian publishes a new ISO |
+
+</details>
+
+<details>
+<summary><b>terraform</b>: 5 workflows</summary>
+
+| Workflow | Runs on | What it does |
+|---|---|---|
+| `validate-and-plan.yml` | pull request | Runs the tests, plans, saves the plan file and comments the plan on the pull request |
+| `apply.yml` | pull request merged, manual | Applies the saved plan under the maintenance lock; dispatches ansible if anything changed |
+| `drift.yml` | daily 08:00 UTC, manual | Plans against the live state; opens, updates or closes a drift issue |
+| `format.yml` | pull request, manual | Formats Terraform, YAML and JSON, and commits the result |
+| `readme-images.yml` | pull request that touches Markdown or `docs/diagrams/` | Checks that every image a Markdown file references exists |
+
+</details>
+
+<details>
+<summary><b>ansible</b>: 10 workflows</summary>
+
+| Workflow | Runs on | What it does |
+|---|---|---|
+| `deploy.yml` | dispatch from terraform, push to `main`, manual | Runs the K3s playbook under the maintenance lock, installs Argo CD, hands the kubeconfig to terraform and apps |
+| `validate.yml` | pull request, manual | Lint, syntax check and the offline test suites |
+| `i915-compat.yml` | pull request, manual | Checks the host GPU driver pin against the guest pin in packer; can call `i915-acceptance.yml` |
+| `format.yml` | pull request | Formats YAML and JSON, and commits the result |
+| `i915-sriov-upgrade.yml` | push that changes the host driver pin, manual | Installs the host GPU driver, then reboots the host |
+| `proxmox-backup.yml` | push that changes the backup role, manual | Deploys the host-side backup |
+| `proxmox-guest-startup.yml` | push that changes the startup role, manual | Sets guest boot order and the host's crash behaviour |
+| `ser2net.yml` | push that changes the ser2net role, manual | Deploys the Zigbee serial bridge |
+| `i915-acceptance.yml` | manual, or called | Proves GPU acceleration works on the running stack or after a reboot |
+| `csi-activation-preflight.yml` | manual | Read-only check before changing Proxmox CSI storage |
+
+</details>
+
+<details>
+<summary><b>apps</b>: 5 workflows</summary>
+
+| Workflow | Runs on | What it does |
+|---|---|---|
+| `validate-and-diff.yml` | pull request | Lint, schema validation, policy checks, and an Argo CD diff preview as a comment |
+| `refresh.yaml` | push to `main`, manual | Tells Argo CD to refresh the apps a commit touched; it never syncs |
+| `format.yaml` | pull request | Formats YAML, JSON and shell, and commits the result |
+| `image-scan.yml` | Mondays 06:00 UTC, manual | Scans the referenced container images with Trivy and uploads the results to the Security tab |
+| `readme-images.yml` | pull request that touches Markdown or `docs/diagrams/` | Checks that every image a Markdown file references exists |
+
+</details>
+
+<details>
+<summary><b>.github</b>: 1 workflow</summary>
+
+| Workflow | Runs on | What it does |
+|---|---|---|
+| `readme-images.yml` | pull request that touches Markdown or `docs/diagrams/` | Checks that every image a Markdown file references exists |
+
+</details>
+
+## The platform
+
+<p align="center">
+  <img src="../docs/diagrams/platform.svg" alt="Platform layers on one host: 60 services, the cluster platform delivered by Argo CD, six Proxmox guests including the three K3s nodes, and the hardware.">
+</p>
+
+| Component | What it is |
+|---|---|
+| **CPU** | Intel Core i7-12700K (12 cores, 20 threads) |
+| **Memory** | 128 GB DDR4 |
+| **GPU** | Intel UHD 770 split into seven SR-IOV virtual functions; each K3s worker gets one for transcoding and inference |
+| **Hypervisor** | Proxmox VE on a mirrored pair of SSDs |
+| **VM disks** | NVMe |
+| **NAS** | TrueNAS in a VM with the disk controller passed through: 8× 14 TB HDD in two RAIDz1 pools |
+| **Cluster storage** | Retained block volumes through Proxmox CSI, plus NFS from TrueNAS at `10.9.8.30` |
+| **Network** | Management VLAN `10.9.9.0/24` and services VLAN `10.9.8.0/24`; every K3s VM has a NIC in each |
+| **Kubernetes** | K3s v1.37 on three VMs: one control plane behind a kube-vip address, two workers |
+
+## What is unusual here
+
+- **The plan that was reviewed is the plan that runs.** `validate-and-plan.yml` saves the plan file from
+  the pull request, and an ordinary merge applies that exact file. Only the destroy mode and a manual run
+  plan again.
+- **Drift becomes an issue.** A daily plan against the live state opens an issue when the two differ and
+  closes it when they agree again.
+- **A GPU driver gate in two repositories.** The guest driver lives in the image and the host driver on
+  Proxmox. Both repositories run the same checker on every pull request, each reading the other's pin,
+  so an incompatible pair cannot merge.
+- **Ordered bring-up from nothing.** Argo CD RollingSync deploys CRDs, then the foundation, then
+  controllers, then services, so an empty cluster converges without hand-holding.
+- **Secrets work on the first sync.** Ansible seeds the Sealed Secrets key before Argo CD starts, so the
+  encrypted secrets already in Git decrypt immediately.
+- **One lock for disruptive work.** Applies, deploys and node retirement share a maintenance lock on the
+  runner.
+- **Backups that leave the building.** Volumes replicate to an encrypted USB pool, restic sends them
+  off-site every night, and healthchecks.io watches every run. The
+  [restore paths](https://github.com/Starktastic-Homelab/ansible/blob/main/docs/backup-and-restore.md) are
+  written down.
+- **Decisions are written down too.** 20 architecture decision records live in
+  [apps/docs/adr](https://github.com/Starktastic-Homelab/apps/tree/main/docs/adr).
 
 ---
 
-## What Is This?
-
-This organization contains a **complete, production-grade infrastructure platform** running on a single server in my home. Every layer — from VM image baking to application deployment — is defined as code, version-controlled, and automated through CI/CD pipelines.
-
-It's not a toy setup. It runs **60+ self-hosted services** across media streaming, home automation, document management, and operations tooling — all behind SSO, intrusion detection, automated TLS, and full observability. And it can be **rebuilt from scratch, unattended**, by merging a single PR.
-
----
-
-## The Pipeline
-
-The crown jewel of this project is the **end-to-end automation pipeline** — four repositories that chain together through GitHub Actions, each triggering the next:
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../docs/diagrams/pipeline-dark.png">
-  <img alt="The Pipeline" src="../docs/diagrams/pipeline.png">
-</picture>
-
-**How it works:**
-
-1. **Packer** builds a hardened Debian VM template on Proxmox with Intel GPU drivers, cloud-init, and modern networking — then pushes a manifest as a PR to the Terraform repo
-2. **Terraform** clones that template into master and worker VMs with dual-NIC networking and GPU passthrough — then triggers Ansible via `repository_dispatch`
-3. **Ansible** installs K3s with HA (Kube-VIP), pre-seeds secrets, restores TLS certificates from backup, and deploys ArgoCD with SSO — which immediately points at the Apps repo
-4. **ArgoCD** takes over and reconciles the entire application layer through a 4-phase ordered deployment, pulling from the Apps repo as the single source of truth
-
-The result: merge a Packer PR, then the Terraform PR it opens → a fully operational cluster with 60+ running services deploys itself.
-
----
-
-## Architecture Overview
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../docs/diagrams/architecture-overview-dark.png">
-  <img alt="Architecture Overview" src="../docs/diagrams/architecture-overview.png">
-</picture>
-
----
-
-## Hardware
-
-| Component | Specification |
-|-----------|--------------|
-| **CPU** | Intel Core i7-12700K (12C/20T) |
-| **RAM** | 128 GB DDR4 |
-| **Form Factor** | Desktop tower |
-| **Hypervisor** | Proxmox VE |
-| **Boot** | 2× 2.5" SSDs (RAID 1) |
-| **VM Storage** | NVMe SSD (`os_storage` — VM / OS disks) |
-| **NAS** | TrueNAS VM (HBA passthrough) · NFS `10.9.8.30` on services VLAN |
-| **Bulk Storage** | 8× 14TB HDDs · 2× RAIDz1 (media + backups) |
-| **Cache / Active Downloads** | 1× 1TB NVMe · ZFS L2ARC + `incomplete-storage` dataset |
-| **Persistent Volumes** | NFS-provisioned from TrueNAS RAIDz1 pools |
-| **GPU** | Intel UHD 770 iGPU with SR-IOV (7 virtual functions) |
-| **Network** | Dual VLAN (management + services) |
-
-One machine. Three K3s nodes. 60+ services. Full HA. GPU-accelerated transcoding.
-
----
-
-## Repositories
-
-| Repository | Purpose | Key Tech |
-|------------|---------|----------|
-| [**📦 packer**](https://github.com/Starktastic-Homelab/packer) | Immutable Debian VM template factory | Packer · HCL · Preseed · Cloud-Init · SR-IOV DKMS |
-| [**🏗️ terraform**](https://github.com/Starktastic-Homelab/terraform) | Declarative VM provisioning with GPU passthrough | Terraform · Proxmox · S3 State · Drift Detection |
-| [**⚙️ ansible**](https://github.com/Starktastic-Homelab/ansible) | K3s cluster setup with HA and GitOps bootstrap | Ansible · K3s · Kube-VIP · ArgoCD · Sealed Secrets |
-| [**☸️ apps**](https://github.com/Starktastic-Homelab/apps) | GitOps application platform (60+ services) | ArgoCD · Helm · Traefik · Authentik · Prometheus |
-
----
-
-## Engineering Highlights
-
-What makes this more than "just a homelab":
-
-- **🔗 End-to-End Pipeline** — Four repos chain together via GitHub Actions. A Packer build opens a manifest PR in Terraform; merging it applies and triggers Ansible, which bootstraps ArgoCD. That merge is the only manual step from image to running cluster.
-
-- **🔄 Infrastructure Drift Detection** — Daily Terraform plans detect and report configuration drift via GitHub Issues, auto-closing when resolved.
-
-- **🔒 Cross-Repo Driver Synchronization** — The Packer CI blocks PR merge if the VM's GPU driver version exceeds the Proxmox host's, preventing boot failures. Renovate coordinates version bumps across repos.
-
-- **📐 4-Phase Ordered Deployment** — ArgoCD's RollingSync deploys CRDs → Foundation → Controllers → Services in strict order, ensuring clean bootstrap from an empty cluster.
-
-- **🧬 Value Cascade Architecture** — A single `globals.yaml` propagates cluster-wide config (domains, IPs, storage) to 60+ services. Changing one value updates everything on the next sync.
-
-- **🎭 Base/Variant Inheritance** — Multi-language service variants inherit 95% of their config from a base service, overriding only what differs in a 3-5 line YAML delta.
-
-- **🔐 Day-Zero Secrets** — Sealed Secrets keypair is pre-seeded by Ansible before ArgoCD deploys, enabling encrypted secrets in Git from the first sync — no chicken-and-egg problem.
-
-- **📡 Full Observability Stack** — Prometheus metrics, Loki logs, Tempo traces, Grafana dashboards, and AlertManager → ntfy push notifications — all deployed via GitOps.
-
-- **💾 Tested Backups** — TrueNAS replicates app volumes every 6 hours to an encrypted pool on a portable SSD, and each night restic sends them and the Immich photos off-site to a Hetzner Storage Box, with the runner VM's weekly dump. healthchecks.io watches every run and Alertmanager's own heartbeat from outside the cluster, and a restore drill checks the copies byte for byte.
-
-- **🎮 GPU Virtualization** — Intel iGPU SR-IOV exposes 7 virtual functions, shared across workers for hardware-accelerated video transcoding and ML inference.
-
-- **🤖 23 CI/CD Workflows** — Across all repos: automated builds, plan-on-PR, drift detection, manifest validation, ArgoCD diff previews, ISO version tracking, driver sync checks, scoped refresh, and weekly image vulnerability scanning.
-
----
-
-## CI/CD Overview
-
-23 GitHub Actions workflows across the four pipeline repositories:
-
-| Repo | Workflows | Highlights |
-|------|-----------|------------|
-| **Packer** (5) | build · validate · format · check-debian-iso · i915-compat | Weekly ISO scraping, cross-repo driver sync |
-| **Terraform** (5) | validate-and-plan · apply · drift · format · diagrams | Plan-on-PR, daily drift detection, drain/destroy modes |
-| **Ansible** (10) | deploy · validate · format · i915-compat · i915-sriov-upgrade · i915-acceptance · csi-activation-preflight · ser2net · proxmox-backup · proxmox-guest-startup | Terraform-triggered deploy, GPU driver lifecycle |
-| **Apps** (5) | validate-and-diff · refresh · format · image-scan · diagrams | Kubeconform + ArgoCD diff preview, smart scope refresh, weekly Trivy scan → GitHub Security tab |
-
-Every PR gets validated. Every merge triggers the right downstream action. The only manual step is merging the PR.
-
----
-
-<div align="center">
-
-*Built with care, automated with purpose, and maintained with the same rigor I bring to production environments.*
-
-**Ben Faingold** · Senior DevOps Engineer
-
-</div>
+<p align="center">
+  <b>Ben Faingold</b> · Senior DevOps Engineer<br>
+  <sub>Product logos in the diagrams are trademarks of their owners and are used only to label the components.</sub>
+</p>
