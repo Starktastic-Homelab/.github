@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../docs/diagrams/banner.svg" alt="Starktastic Homelab: infrastructure as code. One server, five repositories, 26 workflows, three K3s nodes, 75 apps.">
+  <img src="../docs/diagrams/banner.svg" alt="Starktastic Homelab: infrastructure as code. One server, five repositories, 26 workflows, three K3s nodes, 76 apps.">
 </p>
 
 <p align="center">
@@ -9,7 +9,7 @@
   <a href="https://github.com/Starktastic-Homelab/apps/actions/workflows/refresh.yaml"><img src="https://github.com/Starktastic-Homelab/apps/actions/workflows/refresh.yaml/badge.svg" alt="apps refresh"></a>
 </p>
 
-One tower in my home runs a three-node Kubernetes cluster with 60 self-hosted services behind single
+One tower in my home runs a three-node Kubernetes cluster with 61 self-hosted services behind single
 sign-on, intrusion detection, automatic TLS and full observability. Every layer is code in one of five
 repositories, and the repositories are wired together so that a merged pull request rebuilds whatever
 sits below it.
@@ -27,11 +27,11 @@ Each repository owns one stage and hands the next stage exactly one thing.
 | [**packer**](https://github.com/Starktastic-Homelab/packer) | The Debian 13 VM template (VM 900), with the guest GPU driver baked in | A manifest, as a pull request in terraform |
 | [**terraform**](https://github.com/Starktastic-Homelab/terraform) | The K3s VMs: one control plane and two workers cloned from the template | A `repository_dispatch` to ansible |
 | [**ansible**](https://github.com/Starktastic-Homelab/ansible) | The Proxmox host, K3s, and the Argo CD bootstrap | A root app pointing at apps, and the kubeconfig as an organization secret |
-| [**apps**](https://github.com/Starktastic-Homelab/apps) | Every workload: 15 infrastructure apps and 60 services, reconciled by Argo CD | The running platform |
+| [**apps**](https://github.com/Starktastic-Homelab/apps) | Every workload: 15 infrastructure apps and 61 services, reconciled by Argo CD | The running platform |
 | [**.github**](https://github.com/Starktastic-Homelab/.github) | This page and the cross-repo contracts | |
 
 The only manual step is the merge. Merging the manifest pull request replaces the three K3s VMs with
-clones of the new image, the deploy reinstalls K3s on them, and Argo CD brings back all 75 apps from Git
+clones of the new image, the deploy reinstalls K3s on them, and Argo CD brings back all 76 apps from Git
 in four ordered waves.
 
 ## Every workflow, one map
@@ -113,7 +113,7 @@ run at once. Path filters are left out of the tables below; each repository's RE
 ## The platform
 
 <p align="center">
-  <img src="../docs/diagrams/platform.svg" alt="Platform layers on one host: 60 services, the cluster platform delivered by Argo CD, six Proxmox guests including the three K3s nodes, and the hardware.">
+  <img src="../docs/diagrams/platform.svg" alt="Platform layers on one host: 61 services, the cluster platform delivered by Argo CD, six Proxmox guests including the three K3s nodes, and the hardware.">
 </p>
 
 | Component | What it is |

@@ -150,7 +150,7 @@
   <path class="rule" d="M886 246H1054"/>
   <text class="t1 mono" x="886" y="274" font-size="15">refresh.yaml</text>
   <text class="t2" x="886" y="296" font-size="14">Argo CD pulls main</text>
-  <rect class="chip" x="886" y="318" width="168" height="34" rx="10"/><text class="chipt" x="970" y="340.04" font-size="14" font-weight="700" text-anchor="middle">75 apps in 4 waves</text>
+  <rect class="chip" x="886" y="318" width="168" height="34" rx="10"/><text class="chipt" x="970" y="340.04" font-size="14" font-weight="700" text-anchor="middle">76 apps in 4 waves</text>
 
   <path class="edge" d="M232 270H300"/><path class="flow" d="M232 270H300"/><path class="head" d="M309 270l-10 -5.5v11.0z"/>
   <path class="edge" d="M512 270H580"/><path class="flow" d="M512 270H580"/><path class="head" d="M589 270l-10 -5.5v11.0z"/>

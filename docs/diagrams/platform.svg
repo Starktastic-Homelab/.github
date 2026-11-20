@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1100" height="850" viewBox="0 0 1100 850" role="img" aria-labelledby="t d">
   <title id="t">Platform: one host, four layers</title>
-  <desc id="d">From the top: 60 services in three groups (home automation, media, operations); the cluster platform delivered by Argo CD (MetalLB, Traefik, CrowdSec, Authentik, cert-manager, Sealed Secrets, Falco, Proxmox CSI, NFS provisioner, PostgreSQL, Redis); six Proxmox guests (K3s control plane VM 200, K3s workers VM 201 and 202 with iGPU virtual functions, TrueNAS VM 100, the CI runner VM 300 and the Debian template VM 900); and the hardware of a single tower. Backups replicate to a USB pool and go off-site with restic.</desc>
+  <desc id="d">From the top: 61 services in three groups (home automation, media, operations); the cluster platform delivered by Argo CD (MetalLB, Traefik, CrowdSec, Authentik, cert-manager, Sealed Secrets, Falco, Proxmox CSI, NFS provisioner, PostgreSQL, Redis); six Proxmox guests (K3s control plane VM 200, K3s workers VM 201 and 202 with iGPU virtual functions, TrueNAS VM 100, the CI runner VM 300 and the Debian template VM 900); and the hardware of a single tower. Backups replicate to a USB pool and go off-site with restic.</desc>
   <defs>
     <radialGradient id="ga"><stop offset="0" stop-color="#3B82F6" stop-opacity=".55"/><stop offset="1" stop-color="#3B82F6" stop-opacity="0"/></radialGradient>
     <radialGradient id="gb"><stop offset="0" stop-color="#6366F1" stop-opacity=".45"/><stop offset="1" stop-color="#6366F1" stop-opacity="0"/></radialGradient>
@@ -122,7 +122,7 @@
 
   <!-- workloads -->
   <rect class="lane" x="30" y="108" width="1040" height="150" rx="22"/><rect class="rim" x="30.5" y="108.5" width="1039" height="149" rx="21.5"/>
-  <text class="acc" x="48" y="133" font-size="11.5" font-weight="700" letter-spacing="1.5">WORKLOADS · 60 SERVICES</text>
+  <text class="acc" x="48" y="133" font-size="11.5" font-weight="700" letter-spacing="1.5">WORKLOADS · 61 SERVICES</text>
   <rect class="tag" x="990" y="118" width="62" height="22" rx="11"/><text class="tagt" x="1021" y="133.32" font-size="12" text-anchor="middle">apps</text>
   <rect class="card" x="46" y="146" width="320" height="98" rx="16"/><rect class="rim" x="46.5" y="146.5" width="319" height="97" rx="15.5"/>
   <rect class="card" x="390" y="146" width="320" height="98" rx="16"/><rect class="rim" x="390.5" y="146.5" width="319" height="97" rx="15.5"/>
@@ -133,7 +133,7 @@
     <text x="750" y="174">Operations</text>
   </g>
   <rect class="chip" x="312" y="156" width="40" height="24" rx="10"/><text class="chipt" x="332" y="172.68" font-size="13" font-weight="700" text-anchor="middle">3</text>
-  <rect class="chip" x="656" y="156" width="40" height="24" rx="10"/><text class="chipt" x="676" y="172.68" font-size="13" font-weight="700" text-anchor="middle">32</text>
+  <rect class="chip" x="656" y="156" width="40" height="24" rx="10"/><text class="chipt" x="676" y="172.68" font-size="13" font-weight="700" text-anchor="middle">33</text>
   <rect class="chip" x="1000" y="156" width="40" height="24" rx="10"/><text class="chipt" x="1020" y="172.68" font-size="13" font-weight="700" text-anchor="middle">25</text>
   <g class="t2" font-size="13">
     <text x="62" y="200">Home Assistant, Mosquitto,</text>
