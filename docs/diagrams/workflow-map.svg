@@ -217,7 +217,7 @@
   <use href="#i-argocd" x="890" y="466" width="30" height="30"/>
   <text class="t1" x="930" y="480" font-size="16" font-weight="800">Argo CD</text>
   <text class="t2" x="930" y="498" font-size="12.5">pulls main</text>
-  <text class="t2" x="890" y="528" font-size="12.5">75 apps in 4 sync waves</text>
+  <text class="t2" x="890" y="528" font-size="12.5">76 apps in 4 sync waves</text>
 
   <!-- scheduled or manual -->
   <rect class="wf" x="116" y="644" width="180" height="28" rx="8"/><text class="wft mono" x="126" y="662.55" font-size="13">check-debian-iso</text>
