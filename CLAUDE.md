@@ -89,8 +89,8 @@ NFS server and path are duplicated in apps and ansible with no single owner. TOD
   touches CI or dispatch wiring.
 - Commit only when asked. Never push or open PRs unless asked. Never commit secrets.
 - Codex leftovers (`codex/*` branches, `.worktrees/`, `~/.codex/worktrees/`, `docs/superpowers/`) are
-  history. Don't delete ansible's `codex/storage-maintenance`: CI pins the lock helper to a commit that only
-  that branch contains.
+  history. CI checks the lock helper out from ansible `main` (all six copies), so ansible's
+  `codex/storage-maintenance` is history too; delete it only with Ben's OK.
 - README diagrams are hand-drawn SVGs in each repo's `docs/diagrams/`, committed as they are (no renderer, no
   generator). They all carry the same `<style>` block and colour meanings (animated blue = trigger, dashed
   violet = shared data, grey = structure, amber = a person): restyle them together, and re-count any number
